@@ -1,4 +1,4 @@
-.include "gglib_base.inc"
+.include "gglib.inc"
 .include "gglib_extended.inc"
 ;
 ; Definitions:
@@ -15,7 +15,7 @@
 ; -----------------------------------------------------------------------------
   setup_main:
     ;
-    LOAD_IMAGE title_screen_assets,title_screen_assets_end
+    LOAD_RIBBON title_screen_assets,title_screen_assets_end
 
     ; Turn on screen, etc.
     ld hl,register_data

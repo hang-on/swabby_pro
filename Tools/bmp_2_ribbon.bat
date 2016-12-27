@@ -1,8 +1,8 @@
 echo off
-REM gg_convert_bmp.bat
-REM Use bmp2tile to convert a 256x144 bmp to assets for a Game Gear background.
+REM bmp_2_ribbon.bat
+REM Use bmp2tile to convert a 256x144 bmp to assets for a Game Gear background,
+REM optimized for use with gg_lib macro LOAD_RIBBON.
 REM Collects these assets in [bmp filename]_assets.inc.
-REM Use with gg_lib macro LOAD_IMAGE.
 REM Last updated 2016-12-27
 
 SET filename=%~n1

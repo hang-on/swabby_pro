@@ -1,5 +1,5 @@
 ; gglib_base.inc - GG project boilerplate and standard library.
-; Latest revision: 2016-12-23
+; Latest revision: 2016-12-23 for project swabby_pro
 
 ; *****************************************************************************
 ;                              BASE LIBRARY
@@ -12,7 +12,14 @@
 ; HARDWARE DEFINITIONS
 ; -----------------------------------------------------------------------------
 .equ NAME_TABLE_START $3800
-.equ NAME_TABLE_SIZE 2*32*24
+.equ NAME_TABLE_SIZE 2*32*24          ; The whole 'effective area' (SMS/TV).
+
+; The ribbon: The LCD display area + the 6x8 pixels to the left and right.
+; This forms a wide 'ribbon' that is 32x18 tiles in size, going across the
+; name table.
+.equ RIBBON_START $38c0
+.equ RIBBON_SIZE 32*18*2
+
 .equ SAT_Y_START $3f00
 .equ SAT_XC_START SAT_Y_START+64+64
 .equ SPRITE_TERMINATOR $d0
@@ -63,15 +70,15 @@
 ; =============================================================================
 
 ; -----------------------------------------------------------------------------
-.macro LOAD_IMAGE
+.macro LOAD_RIBBON
 ; -----------------------------------------------------------------------------
-  ; This macro makes it easy to load an image. Call the macro like this:
-  ; LOAD_IMAGE MockupAssets,MockupAssetsEnd
+  ; This macro makes it easy to load a ribbon. Call the macro like this:
+  ; LOAD_RIBBON MockupAssets,MockupAssetsEnd
   ; Include format:
   ;    mockup_assets:
   ;      .include "mockup_assets.inc"
   ;    mockup_assets_end:
-  ; Drop a 256x144 indexed color image on \Tools\gg_convert.bat to quickly
+  ; Drop a 256x144 indexed color image on \Tools\bmp_2_ribbon.bat to quickly
   ; generate an include file formatted for this macro.
   ;
   ; Assume 16 colors (bmp2tile's -fullpalette option).
@@ -80,14 +87,14 @@
   ld hl,\1
   call load_cram
   ;.
-  ld bc,32*18*2
-  ld de,$38c0
+  ld bc,RIBBON_SIZE
+  ld de,RIBBON_START
   ld hl,\1+32
   call load_vram
   ; Amount of tiles can vary.
-  ld bc,\2-(\1+32+(32*18*2))
+  ld bc,\2-(\1+32+RIBBON_SIZE)
   ld de,0
-  ld hl,\1+32+(32*18*2)
+  ld hl,\1+32+RIBBON_SIZE
   call load_vram
 .endm
 ; -----------------------------------------------------------------------------
