@@ -1,0 +1,25 @@
+; this file was created with wlalink by ville helin <vhelin@iki.fi>.
+; wla symbolic information for "Binaries\swabby_pro.gg".
+
+[labels]
+0000:c000 VDPStatus
+0000:c001 PauseFlag
+0000:c002 InputPorts
+0000:001d _MapperInitData
+0000:00ef AwaitFrameInterrupt
+0000:0021 ClearRam
+0000:002d _FillMemory
+0000:00a6 ClearVRam
+0000:0042 _VDPRegisterInitData
+0000:004d InitializeVDPRegisters
+0000:00cd load_cram
+0000:00ba load_vram
+0000:00de load_vdp_registers
+0000:0071 setup_main
+0000:00a0 main
+0001:4000 title_screen_assets
+0001:4000 titlescreenPalette
+0001:4020 titlescreenTilemap
+0001:44a0 titlescreenTiles
+0001:5900 title_screen_assets_end
+0001:5900 register_data
