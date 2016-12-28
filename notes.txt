@@ -29,5 +29,15 @@ Regarding animations: We have a central control for the 3-4 different types of
 enemies on each level. They all animate in parallel.
 
 Swabby (the player) is a special type of object, which is not on the EAT.
+
 Bullets fired by the player and the enemies have their own table: BAT.
+state (0 = inactive, 1 = active)        - byte
+type (enemy/Swabby bullet > used for
+  hit detection, damage and character)  - byte
 x, y, xspeed, yspeed                    - byte x 4
+
+ON both EAT and BAT. When a new enemy/bullet is spawned, we start from the
+first element and look for the first element that is inactive. When found, this
+element is updated with the desired enemy/bullet data, and set to active.
+
+On each update, every element is examined. If active, then it is processed.
