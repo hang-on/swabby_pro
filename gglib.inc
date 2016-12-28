@@ -461,6 +461,7 @@
   ; Uses: AF, BC, HL
   ; Assumes blanked display and interrupts off.
   load_cram:
+    sla a
     out (CONTROL_PORT),a
     ld a,CRAM_WRITE_COMMAND
     out (CONTROL_PORT),a

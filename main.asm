@@ -16,7 +16,7 @@
   init:
     ; Run this function once (on game load).
     ;
-    ld a,0
+    ld a,16
     ld b,16
     ld hl,pico8_palette
     call load_cram
@@ -59,10 +59,7 @@
 ;
 .bank 2 slot 2
 ; -----------------------------------------------------------------------------
-.section "title_screen_ribbon" free
+.section "title_screen" free
 ; -----------------------------------------------------------------------------
-  titlescreen_ribbon:
-    .include "bank_2\titlescreen_ribbon.inc"
-  titlescreen_ribbon_end:
   ;
 .ends
