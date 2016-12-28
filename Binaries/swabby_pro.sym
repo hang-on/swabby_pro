@@ -15,7 +15,7 @@
 0000:00cb load_cram
 0000:00ec set_register
 0000:0071 init
-0000:0089 background_palette
+0000:0089 pico8_palette
 0000:00a9 main_loop
 0000:00b5 draw
 0000:00b6 update

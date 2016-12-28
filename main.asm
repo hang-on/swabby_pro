@@ -18,7 +18,7 @@
     ;
     ld a,0
     ld b,16
-    ld hl,background_palette
+    ld hl,pico8_palette
     call load_cram
     ;
     ; Turn on screen and frame interrupts.
@@ -29,9 +29,9 @@
     ei
     call await_frame_interrupt
   jp main_loop
-  background_palette:
-    .dw $0FA2 $0000 $0527 $040F $035A $0580 $03E0 $00AF
-    .dw $0CCC $0EFF $0FFF $0000 $0000 $0000 $0000 $0000
+  pico8_palette:
+    .dw $0000 $0521 $0527 $0580 $035A $0455 $0CCC $0EFF
+    .dw $040F $00AF $02EF $03E0 $0FA2 $0978 $0A7F $0ACF
   ;
   ; ---------------------------------------------------------------------------
   main_loop:
