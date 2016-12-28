@@ -13,25 +13,38 @@
 ; -----------------------------------------------------------------------------
 .section "main" free
 ; -----------------------------------------------------------------------------
-  setup_main:
+  init:
+    ; Run this function once (on game load).
     ;
     LOAD_RIBBON title_screen_assets,title_screen_assets_end
-
+    ;
     ; Turn on screen, etc.
     ld hl,register_data
     call load_vdp_registers
     ; Skip a frame to make sure that we start main at vblank.
     ei
-    call AwaitFrameInterrupt
-  jp main
+    call await_frame_interrupt
+  jp main_loop
   ;
   ; ---------------------------------------------------------------------------
-  main:
-    call AwaitFrameInterrupt
-    ; NTSC vblank is lines 194-262 = 68 lines in total.
+  main_loop:
+    call await_frame_interrupt
+    call draw
     ;
+    call update
     ;
-    jp main
+  jp main_loop
+  ;
+  ; ---------------------------------------------------------------------------
+  draw:
+    ; Draw sprites and background.
+  ret
+  ;
+  ; ---------------------------------------------------------------------------
+  update:
+    ; Update the game objects.
+  ret
+  ;
 .ends
 ;
 .bank 1 slot 1

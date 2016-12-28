@@ -167,7 +167,7 @@
   call ClearRam ; Except the top (stack, slot/bank registers, etc.)
   call ClearVRam
   call InitializeVDPRegisters
-  jp setup_main
+  jp init
 
   _MapperInitData:
     .db $00,$00,$01,$02
@@ -207,7 +207,7 @@
 ; =============================================================================
 
 ; -----------------------------------------------------------------------------
-.section "Await frame interrupt" free
+.section "await_frame_interrupt" free
 ; -----------------------------------------------------------------------------
   ; Await frame interrupt.
   ; Repeatedly test bit 7 of VDPStatus until it is set (by the VDP interrupt
@@ -215,7 +215,7 @@
   ; Entry: None
   ; Exit: Bit 7 of variable VDPStatus is cleared.
   ; Uses: VDPStatus (1 byte)
-  AwaitFrameInterrupt:
+  await_frame_interrupt:
     push af
       -:
         ld a,(VDPStatus)
