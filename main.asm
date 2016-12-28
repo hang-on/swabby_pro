@@ -18,17 +18,14 @@
     ;
     LOAD_RIBBON titlescreen_ribbon,titlescreen_ribbon_end
     ;
-    ; Turn on screen, etc.
-    ld hl,init_register_data
-    call load_vdp_registers
+    ; Turn on screen and frame interrupts.
+    ld a,DISPLAY_1_FRAME_1_SIZE_0
+    ld b,1
+    call set_register
     ; Skip a frame to make sure that we start main at vblank.
     ei
     call await_frame_interrupt
   jp main_loop
-  init_register_data:
-    .db FULL_SCROLL_BLANK_LEFT_COLUMN_SHIFT_SPRITES_NO_RASTER_INT
-    .db ENABLE_DISPLAY_ENABLE_FRAME_INTERRUPTS_NORMAL_SPRITES
-    .db $ff,$ff,$ff,$ff,$ff,$00,$00,$00,$ff
   ;
   ; ---------------------------------------------------------------------------
   main_loop:
