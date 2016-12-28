@@ -20,6 +20,14 @@
     ld b,16
     ld hl,pico8_palette
     call load_cram
+    ld bc,titlescreen_tiles_end-titlescreen_tiles
+    ld de,0
+    ld hl,titlescreen_tiles
+    call load_vram
+    ld bc,NAME_TABLE_SIZE
+    ld de,NAME_TABLE_START
+    ld hl,titlescreen_tilemap
+    call load_vram
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
@@ -61,5 +69,9 @@
 ; -----------------------------------------------------------------------------
 .section "title_screen" free
 ; -----------------------------------------------------------------------------
-  ;
+  titlescreen_tilemap:
+    .include "bank_2\titlescreen_tilemap.inc"
+  titlescreen_tiles:
+    .include "bank_2\titlescreen_tiles.inc"
+  titlescreen_tiles_end:
 .ends
