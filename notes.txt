@@ -1,0 +1,33 @@
+EAT. Enemy Attribute Table.
+
+state (0 = inactive, 1 = active, 2 = )  - byte
+type                                    - byte
+
+x, y, xspeed, yspeed                    - byte x 4
+movement_timer                          - byte
+movement_table_ptr                      - word
+When movement_timer ends then
+  - forward movement_table_ptr
+  - read byte
+  - if $ff then
+    - read next byte into movement_timer
+    - read the next two bytes into movement_table_ptr
+    - exit
+  else
+    - load xspeed with the byte
+    - read next byte into yspeed
+    - read next byte into movement_timer
+  endif
+  Movement_table is holding 3-byte elements: (xspeed,yspeed,movement_timer,
+  except for last element, which is $ff,ptr to start of movement table).
+
+life                                    - byte
+shot_timer                              - word
+
+
+Regarding animations: We have a central control for the 3-4 different types of
+enemies on each level. They all animate in parallel.
+
+Swabby (the player) is a special type of object, which is not on the EAT.
+Bullets fired by the player and the enemies have their own table: BAT.
+x, y, xspeed, yspeed                    - byte x 4
