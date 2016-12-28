@@ -49,13 +49,14 @@
 .ends
 ;
 .bank 1 slot 1
+;
+;
+.bank 2 slot 2
 ; -----------------------------------------------------------------------------
 .section "title_screen_ribbon" free
 ; -----------------------------------------------------------------------------
   titlescreen_ribbon:
-    .include "ribbons\titlescreen_ribbon.inc"
+    .include "bank_2\titlescreen_ribbon.inc"
   titlescreen_ribbon_end:
   ;
 .ends
-;
-.bank 2 slot 2

@@ -19,8 +19,8 @@
 0000:00a1 main_loop
 0000:00ad draw
 0000:00ae update
-0001:4000 titlescreen_ribbon
-0001:4000 titlescreenPalette
-0001:4020 titlescreenTilemap
-0001:44a0 titlescreenTiles
-0001:5900 titlescreen_ribbon_end
+0002:8000 titlescreen_ribbon
+0002:8000 titlescreenPalette
+0002:8020 titlescreenTilemap
+0002:84a0 titlescreenTiles
+0002:9900 titlescreen_ribbon_end
