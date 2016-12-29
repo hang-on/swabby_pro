@@ -172,10 +172,7 @@
       call load_vram            ; Load the tiles into vram.
     pop hl                      ; Retrieve pointer to spritebank table.
     inc hl                      ; Forward it twice to point to next table
-    inc hl                      ; element's index of the END_OF_TABLE marker.
+    inc hl                      ; element's index or the END_OF_TABLE marker.
     ;
-  jp load_spritebank            ; 
-
-
-
+  jp load_spritebank
 .ends

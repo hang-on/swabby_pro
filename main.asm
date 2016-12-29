@@ -7,6 +7,8 @@
   .equ GS_BOOT 0
   .equ GS_PREPARE_TITLESCREEN 1
   .equ GS_RUN_TITLESCREEN 2
+; Assets:
+  .equ TITLESCREEN_BANK 2
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,25 +31,24 @@
     ld a,GS_PREPARE_TITLESCREEN
     ld (game_state),a
   jp main_loop
-
+  ;
   pico8_palette:
     .dw $0000 $0521 $0527 $0580 $035A $0455 $0CCC $0EFF
     .dw $040F $00AF $02EF $03E0 $0FA2 $0978 $0A7F $0ACF
   ; ---------------------------------------------------------------------------
   main_loop:
-    ; Note: Wait for vblank in the loops!
+    ; Note: This loop can begin on any line - wait for vblank in the states!
     ld a,(game_state)
     cp GS_PREPARE_TITLESCREEN
     jp z,prepare_titlescreen
     cp GS_RUN_TITLESCREEN
     jp z,run_titlescreen
-    ;
   jp main_loop
   ;
   ; ---------------------------------------------------------------------------
   prepare_titlescreen:
-    SELECT_BANK 2
     ; Load titlescreen tiles and tilemap to vram.
+    SELECT_BANK TITLESCREEN_BANK
     ld bc,titlescreen_tiles_end-titlescreen_tiles
     ld de,BACKGROUND_BANK_START
     ld hl,titlescreen_tiles
@@ -56,26 +57,25 @@
     ld de,NAME_TABLE_START
     ld hl,titlescreen_tilemap
     call load_vram
-    ;
     ld hl,titlescreen_spritebank_table
     call load_spritebank
-    ;
-    ld a,GS_RUN_TITLESCREEN
-    ld (game_state),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
     call set_register
     ei
+    ; When all is set, change the game state.
+    ld a,GS_RUN_TITLESCREEN
+    ld (game_state),a
   jp main_loop
   ;
   ; ---------------------------------------------------------------------------
   run_titlescreen:
-    ; Draw the graphics.
     call await_frame_interrupt
+    ; VBlank operations goes here...
     ;
-    ;
-    ; Update the game objects.
+    ; 
+    ; Non-VBlank stuff goes here...
     ld hl,frame_counter
     inc (hl)
   jp main_loop
@@ -85,9 +85,9 @@
 .bank 1 slot 1
 ;
 ;
-.bank 2 slot 2
+.bank TITLESCREEN_BANK slot 2
 ; -----------------------------------------------------------------------------
-.section "title_screen" free
+.section "Title screen assets" free
 ; -----------------------------------------------------------------------------
   titlescreen_spritebank_table:           ; Used by function load_spritebank.
     .db 0                                 ; Index in spritebank.
@@ -107,5 +107,4 @@
   blinker_tiles:
     .include "bank_2\blinker_tiles.inc"
   blinker_tiles_end:
-
 .ends
