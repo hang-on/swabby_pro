@@ -16,7 +16,6 @@
 0000:0130 load_vram
 0000:0153 set_register
 0000:00e0 load_spritebank
-0000:00e0 load_loop
 0000:0071 init
 0000:00ac pico8_palette
 0000:00cc titlescreen_spritebank_table

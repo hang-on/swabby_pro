@@ -33,10 +33,6 @@
     ld hl,titlescreen_tilemap
     call load_vram
     ;
-    ; ld bc,blinker_tiles_end-blinker_tiles
-    ; ld de,SPRITE_BANK_START
-    ; ld hl,blinker_tiles
-    ; call load_vram
     ld hl,titlescreen_spritebank_table
     call load_spritebank
     ;

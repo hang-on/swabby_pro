@@ -135,10 +135,14 @@
 .section "spritebank handling" free
 ; -----------------------------------------------------------------------------
   load_spritebank:
-  ; Batchload tiles into the spritebank.
-  ; HL = Pointer to spritebank table.
-  ; Uses: AF, BC, DE, HL
-  load_loop:
+    ; Batchload tiles from a table into the spritebank.
+    ; Spritebank table format (byte, word, word):
+    ; i nnnn pppp
+    ; i = index, n = number of bytes to load, p = pointer to tiles data.
+    ; Terminate table with byte END_OF_TABLE ($ff).
+    ; HL = Pointer to spritebank table.
+    ; Uses: AF, BC, DE, HL
+    ; N.B.: Disable interrupts and display before calling this function! 
     push hl
       ld hl,SPRITE_BANK_START
       cp 0
@@ -169,7 +173,7 @@
     ld a,(hl)
     cp END_OF_TABLE
     ret z                     ; Return if we are at the table's end.
-  jp load_loop
+  jp load_spritebank
 
 
 
