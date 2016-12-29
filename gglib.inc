@@ -13,6 +13,7 @@
 ; -----------------------------------------------------------------------------
 .equ NAME_TABLE_START $3800
 .equ NAME_TABLE_SIZE 2*32*24          ; The whole 'effective area' (SMS/TV).
+.equ SPRITE_BANK_START $2000
 
 .equ SAT_Y_START $3f00
 .equ SAT_XC_START SAT_Y_START+64+64

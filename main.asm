@@ -32,6 +32,11 @@
     ld hl,titlescreen_tilemap
     call load_vram
     ;
+    ld bc,press_start_button_tiles_end-press_start_button_tiles
+    ld de,SPRITE_BANK_START
+    ld hl,press_start_button_tiles
+    call load_vram
+    ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -77,4 +82,12 @@
   titlescreen_tiles:
     .include "bank_2\titlescreen_tiles.inc"
   titlescreen_tiles_end:
+  ;
+  press_start_button_tilemap:
+    .include "bank_2\press_start_button_tilemap.inc"
+  press_start_button_tilemap_end:
+  press_start_button_tiles:
+    .include "bank_2\press_start_button_tiles.inc"
+  press_start_button_tiles_end:
+
 .ends
