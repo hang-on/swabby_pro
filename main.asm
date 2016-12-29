@@ -33,10 +33,12 @@
     ld hl,titlescreen_tilemap
     call load_vram
     ;
-    ld bc,blinker_tiles_end-blinker_tiles
-    ld de,SPRITE_BANK_START
-    ld hl,blinker_tiles
-    call load_vram
+    ; ld bc,blinker_tiles_end-blinker_tiles
+    ; ld de,SPRITE_BANK_START
+    ; ld hl,blinker_tiles
+    ; call load_vram
+    ld hl,titlescreen_spritebank_table
+    call load_spritebank
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
@@ -52,7 +54,7 @@
     .dw $040F $00AF $02EF $03E0 $0FA2 $0978 $0A7F $0ACF
   ;
   titlescreen_spritebank_table:           ; Used by function load_spritebank.
-    .dw 0                                 ; Index in spritebank.
+    .db 0                                 ; Index in spritebank.
     .dw blinker_tiles_end-blinker_tiles   ; Number of bytes to load.
     .dw blinker_tiles                     ; Pointer to tile data.
     .db END_OF_TABLE                      ; Table terminator.
