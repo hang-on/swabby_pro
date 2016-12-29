@@ -16,6 +16,7 @@
   init:
     ; Run this function once (on game load).
     ;
+    SELECT_BANK 2
     ; Load the pico-8 palette to colors 16-31.
     ld a,16
     ld b,16
