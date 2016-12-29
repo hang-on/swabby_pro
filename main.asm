@@ -53,6 +53,9 @@
     .db 0                                 ; Index in spritebank.
     .dw blinker_tiles_end-blinker_tiles   ; Number of bytes to load.
     .dw blinker_tiles                     ; Pointer to tile data.
+    .db 20                                ; Index in spritebank.
+    .dw blinker_tiles_end-blinker_tiles   ; Number of bytes to load.
+    .dw blinker_tiles                     ; Pointer to tile data.
     .db END_OF_TABLE                      ; Table terminator.
   ;
   ; ---------------------------------------------------------------------------

@@ -142,38 +142,39 @@
     ; Terminate table with byte END_OF_TABLE ($ff).
     ; HL = Pointer to spritebank table.
     ; Uses: AF, BC, DE, HL
-    ; N.B.: Disable interrupts and display before calling this function! 
-    push hl
-      ld hl,SPRITE_BANK_START
-      cp 0
-      jp z,+
-        ld de,32
-        ld b,a
+    ; N.B.: Disable interrupts and display before calling this function!
+    ld a,(hl)                   ; Get byte from the spritebank table.
+    cp END_OF_TABLE             ; Is it the table terminator char?
+    ret z                       ; Yes? - then return, else continue.
+    ; Setup DE, BC and HL for a call to function load_vram.
+    push hl                     ; Save pointer to spritebank table.
+      ld hl,SPRITE_BANK_START   ; Load the address of tile at index 0 into HL.
+      cp 0                      ; Is this the index specified in the table?
+      jp z,+                    ; Yes? - skip dest. address calculation.
+        ld de,32                ; Each tile in the bank is 32 bytes.
+        ld b,a                  ; Repeat [index] times...
         -:
-          add hl,de
+          add hl,de             ; Add the size of one tile.
         djnz -
-      +:
-      ex de,hl
-    pop hl
-    inc hl
-    ld c,(hl)
+      +:                        ; Now the destination address is in HL.
+      ex de,hl                  ; So switch it over to DE.
+    pop hl                      ; Retrieve pointer to spritebank table.
+    inc hl                      ; Read number of bytes to load from table and
+    ld c,(hl)                   ; store it in BC...
     inc hl
     ld b,(hl)
     inc hl
-    push hl
-      ld a,(hl)
-      inc hl
+    push hl                     ; Save pointer to spritebank table.
+      ld a,(hl)                 ; Read pointer to tile data from table and
+      inc hl                    ; store it in HL...
       ld h,(hl)
       ld l,a
-      call load_vram
-    pop hl
-    inc hl
-    inc hl
+      call load_vram            ; Load the tiles into vram.
+    pop hl                      ; Retrieve pointer to spritebank table.
+    inc hl                      ; Forward it twice to point to next table
+    inc hl                      ; element's index of the END_OF_TABLE marker.
     ;
-    ld a,(hl)
-    cp END_OF_TABLE
-    ret z                     ; Return if we are at the table's end.
-  jp load_spritebank
+  jp load_spritebank            ; 
 
 
 
