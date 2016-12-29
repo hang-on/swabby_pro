@@ -7,7 +7,8 @@
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 .ramsection "Main variables" slot 3
-  ; [no variables]
+  game_state db
+  frame_counter db
 .ends
 .bank 0 slot 0
 ; -----------------------------------------------------------------------------
@@ -72,6 +73,8 @@
   ; ---------------------------------------------------------------------------
   update:
     ; Update the game objects.
+    ld hl,frame_counter
+    inc (hl)
   ret
   ;
 .ends
