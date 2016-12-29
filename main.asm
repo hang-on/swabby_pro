@@ -16,10 +16,12 @@
   init:
     ; Run this function once (on game load).
     ;
+    ; Load the pico-8 palette to colors 16-31.
     ld a,16
     ld b,16
     ld hl,pico8_palette
     call load_cram
+    ; Load titlescreen tiles and tilemap to vram.
     ld bc,titlescreen_tiles_end-titlescreen_tiles
     ld de,0
     ld hl,titlescreen_tiles
