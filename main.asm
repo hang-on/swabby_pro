@@ -2,7 +2,7 @@
 .include "gglib_extended.inc"
 ;
 ; Definitions:
-; [none]
+.equ PICO8_PALETTE_SIZE 16
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,13 +18,13 @@
     ;
     SELECT_BANK 2
     ; Load the pico-8 palette to colors 16-31.
-    ld a,16
-    ld b,16
+    ld a,SPRITE_PALETTE_START
+    ld b,PICO8_PALETTE_SIZE
     ld hl,pico8_palette
     call load_cram
     ; Load titlescreen tiles and tilemap to vram.
     ld bc,titlescreen_tiles_end-titlescreen_tiles
-    ld de,0
+    ld de,BACKGROUND_BANK_START
     ld hl,titlescreen_tiles
     call load_vram
     ld bc,NAME_TABLE_SIZE
