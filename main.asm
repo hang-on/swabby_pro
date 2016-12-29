@@ -15,6 +15,7 @@
 ; -----------------------------------------------------------------------------
   init:
     ; Run this function once (on game load).
+    ; FIXME: Replace with state machine!
     ;
     SELECT_BANK 2
     ; Load the pico-8 palette to colors 16-31.
@@ -32,9 +33,9 @@
     ld hl,titlescreen_tilemap
     call load_vram
     ;
-    ld bc,press_start_button_tiles_end-press_start_button_tiles
+    ld bc,blinker_tiles_end-blinker_tiles
     ld de,SPRITE_BANK_START
-    ld hl,press_start_button_tiles
+    ld hl,blinker_tiles
     call load_vram
     ;
     ; Turn on screen and frame interrupts.
@@ -45,9 +46,16 @@
     ei
     call await_frame_interrupt
   jp main_loop
+  ;
   pico8_palette:
     .dw $0000 $0521 $0527 $0580 $035A $0455 $0CCC $0EFF
     .dw $040F $00AF $02EF $03E0 $0FA2 $0978 $0A7F $0ACF
+  ;
+  titlescreen_spritebank_table:           ; Used by function load_spritebank.
+    .db 0                                 ; Index in spritebank.
+    .dw blinker_tiles_end-blinker_tiles   ; Number of bytes to load.
+    .dw blinker_tiles                     ; Pointer to tile data.
+    .db END_OF_TABLE                      ; Table terminator.
   ;
   ; ---------------------------------------------------------------------------
   main_loop:
@@ -83,11 +91,11 @@
     .include "bank_2\titlescreen_tiles.inc"
   titlescreen_tiles_end:
   ;
-  press_start_button_tilemap:
-    .include "bank_2\press_start_button_tilemap.inc"
-  press_start_button_tilemap_end:
-  press_start_button_tiles:
-    .include "bank_2\press_start_button_tiles.inc"
-  press_start_button_tiles_end:
+  blinker_tilemap:
+    .include "bank_2\blinker_tilemap.inc"
+  blinker_tilemap_end:
+  blinker_tiles:
+    .include "bank_2\blinker_tiles.inc"
+  blinker_tiles_end:
 
 .ends

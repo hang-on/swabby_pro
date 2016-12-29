@@ -1,5 +1,5 @@
 ; gglib_base.inc - GG project boilerplate and standard library.
-; Latest revision: 2016-12-23 for project swabby_pro
+; Latest revision: Winter 2016/2017 for project swabby_pro.
 
 ; *****************************************************************************
 ;                              BASE LIBRARY

@@ -1,8 +1,8 @@
-; gglib_extended.inc - updated 2016-12-23
+; gglib_extended.inc - updated winter 2016/2017
 ;
 ;
 .equ ONE_TILEMAP_ROW 32*2
-
+.equ END_OF_TABLE $ff
 
 ; -----------------------------------------------------------------------------
 .section "vdp_registers" free
@@ -128,5 +128,13 @@
         jp nz,-
       pop bc                ; Restore rect-width*2.
     djnz --                 ; The rect-height for-loop.
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
+.section "spritebank handling" free
+; -----------------------------------------------------------------------------
+  load_spritebank:
+  ;
   ret
 .ends
