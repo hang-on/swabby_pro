@@ -33,8 +33,8 @@
 0002:8000 titlescreen_spritebank_table
 0002:8006 titlescreen_tilemap
 0002:8706 titlescreen_tiles
-0002:9c66 titlescreen_tiles_end
-0002:9c66 blinker_tilemap
-0002:9c8a blinker_tilemap_end
-0002:9c8a blinker_tiles
-0002:9eca blinker_tiles_end
+0002:9ae6 titlescreen_tiles_end
+0002:9ae6 blinker_tilemap
+0002:9b0a blinker_tilemap_end
+0002:9b0a blinker_tiles
+0002:9d4a blinker_tiles_end
