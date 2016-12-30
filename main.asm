@@ -15,6 +15,8 @@
 .ramsection "Main variables" slot 3
   game_state db
   frame_counter db
+  ;
+  blinker_buffer dsb 18*2
 .ends
 .bank 0 slot 0
 ; -----------------------------------------------------------------------------
@@ -61,10 +63,29 @@
     call load_spritebank
 
 debug:
-    ld hl,$3bce
+    ld a,18
+    ld b,1
+    ld hl,$3b8e
+    ld de,blinker_buffer
+    call copy_tilemap_rect_to_buffer
+
+    ld hl,$3b8e
     ld a,18
     ld b,1
     call blank_tilemap_rect
+
+    ld a,18
+    ld b,1
+    ld hl,blinker_buffer
+    ld de,$3b8e
+    call copy_buffer_to_tilemap_rect
+
+
+    ld a,18
+    ld b,1
+    ld hl,blinker_tilemap
+    ld de,$3b8e
+    call copy_buffer_to_tilemap_rect
 
 
     ; Turn on screen and frame interrupts.
