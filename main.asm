@@ -7,17 +7,20 @@
   .equ GS_BOOT 0
   .equ GS_PREPARE_TITLESCREEN 1
   .equ GS_RUN_TITLESCREEN 2
-; Assets:
-  .equ TITLESCREEN_BANK 2
-  .equ BLINKER_WIDTH 18
-  .equ BLINKER_HEIGHT 1
-  .equ BLINKER_ADDRESS $3b8e
+; Titlesreen assets:
+  .equ TITLESCREEN_BANK 2         ; Titlesreen assets are in bank 2.
+  .equ BLINKER_WIDTH 18           ; The blinking "press start button" message
+  .equ BLINKER_HEIGHT 1           ; is 18 tiles wide (and a single tile high).
+  .equ BLINKER_ADDRESS $3b8e      ; Address of first name table element.
+  .equ BLINKER_DURATION 100       ; Number of frames between on/off.
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 .ramsection "Main variables" slot 3
-  game_state db
-  frame_counter db
+  game_state db                   ; Contains game state.
+  frame_counter db                ; Used in some loops.
+  ;
+  blinker_timer db                ; The speed of the titlesreen blinker.
   ;
   temp_byte db
   temp_word dw
@@ -66,12 +69,15 @@
     call load_vram
     ld hl,titlescreen_spritebank_table
     call load_spritebank
-    ; Save the tilemap where "press start button" will be drawn.
+    ; Save the tilemap where "press start button" will blink.
     ld a,BLINKER_WIDTH
     ld b,BLINKER_HEIGHT
     ld hl,BLINKER_ADDRESS
     ld de,temp_buffer
     call copy_tilemap_rect_to_buffer
+    ; Start timer.
+    ld a,BLINKER_DURATION
+    ld (blinker_timer),a
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
@@ -86,10 +92,16 @@
   ; ---------------------------------------------------------------------------
   run_titlescreen:
     call await_frame_interrupt
-    ; Handle the "press start button" blinker effect.
-    ld a,(frame_counter)
-    cp $ff/2
-    jp nc,+
+    ; Decrement blinker_timer and reset to BLINKER_DURATION if it reaches 0.
+    ld a,(blinker_timer)
+    dec a
+    cp 0
+    jp nz,+
+      ld a,BLINKER_DURATION
+    +:
+    ld (blinker_timer),a
+    cp BLINKER_DURATION/2
+    jp c,+
       ; Remove "press start button".
       ld a,BLINKER_WIDTH
       ld b,BLINKER_HEIGHT
