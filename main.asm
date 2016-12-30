@@ -9,6 +9,9 @@
   .equ GS_RUN_TITLESCREEN 2
 ; Assets:
   .equ TITLESCREEN_BANK 2
+  .equ BLINKER_WIDTH 18
+  .equ BLINKER_HEIGHT 1
+  .equ BLINKER_ADDRESS $3b8e
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,7 +19,9 @@
   game_state db
   frame_counter db
   ;
-  blinker_buffer dsb 18*2
+  temp_byte db
+  temp_word dw
+  temp_buffer dsb 32*2
 .ends
 .bank 0 slot 0
 ; -----------------------------------------------------------------------------
@@ -61,33 +66,13 @@
     call load_vram
     ld hl,titlescreen_spritebank_table
     call load_spritebank
-
-debug:
-    ld a,18
-    ld b,1
-    ld hl,$3b8e
-    ld de,blinker_buffer
+    ; Save the tilemap where "press start button" will be drawn.
+    ld a,BLINKER_WIDTH
+    ld b,BLINKER_HEIGHT
+    ld hl,BLINKER_ADDRESS
+    ld de,temp_buffer
     call copy_tilemap_rect_to_buffer
-
-    ld hl,$3b8e
-    ld a,18
-    ld b,1
-    call blank_tilemap_rect
-
-    ld a,18
-    ld b,1
-    ld hl,blinker_buffer
-    ld de,$3b8e
-    call copy_buffer_to_tilemap_rect
-
-
-    ld a,18
-    ld b,1
-    ld hl,blinker_tilemap
-    ld de,$3b8e
-    call copy_buffer_to_tilemap_rect
-
-
+    ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -101,8 +86,25 @@ debug:
   ; ---------------------------------------------------------------------------
   run_titlescreen:
     call await_frame_interrupt
-    ; VBlank operations goes here...
-    ;
+    ; Handle the "press start button" blinker effect.
+    ld a,(frame_counter)
+    cp $ff/2
+    jp nc,+
+      ; Remove "press start button".
+      ld a,BLINKER_WIDTH
+      ld b,BLINKER_HEIGHT
+      ld hl,temp_buffer
+      ld de,BLINKER_ADDRESS
+      call copy_buffer_to_tilemap_rect
+      jp ++
+    +:
+      ; Show "press start button".
+      ld a,BLINKER_WIDTH
+      ld b,BLINKER_HEIGHT
+      ld hl,blinker_tilemap
+      ld de,BLINKER_ADDRESS
+      call copy_buffer_to_tilemap_rect
+    ++:
     ;
     ; Non-VBlank stuff goes here...
     ld hl,frame_counter
@@ -130,9 +132,9 @@ debug:
     .include "bank_2\titlescreen_tiles.inc"
   titlescreen_tiles_end:
   ;
-  blinker_tilemap:
-    .include "bank_2\blinker_tilemap.inc"
-  blinker_tilemap_end:
+  blinker_tilemap:                        ; Adjust BLINKER_WIDTH and
+    .include "bank_2\blinker_tilemap.inc" ; BLINKER_HEIGHT on changes to the
+  blinker_tilemap_end:                    ; blinker asset.
   blinker_tiles:
     .include "bank_2\blinker_tiles.inc"
   blinker_tiles_end:
