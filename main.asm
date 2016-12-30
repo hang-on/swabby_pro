@@ -59,6 +59,14 @@
     call load_vram
     ld hl,titlescreen_spritebank_table
     call load_spritebank
+
+debug:
+    ld hl,$3bce
+    ld a,18
+    ld b,1
+    call blank_tilemap_rect
+
+
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -74,7 +82,7 @@
     call await_frame_interrupt
     ; VBlank operations goes here...
     ;
-    ; 
+    ;
     ; Non-VBlank stuff goes here...
     ld hl,frame_counter
     inc (hl)
