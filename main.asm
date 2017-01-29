@@ -134,17 +134,17 @@
   ;
   ; ---------------------------------------------------------------------------
   prepare_devmode:
-    ld hl,EXTRAM_START
-    ld (extram_header),hl
-    ;
+    ld hl,EXTRAM_START              ; Point extram_header to the start
+    ld (extram_header),hl           ; of external ram bank ($8000).
+    ld a,1                          ; Set up frame counter to that it will
+    ld (frame_counter),a            ; reach zero at first decrement.
+    ; Clear external ram.
     ld a,NO_OFFSET_SELECT_RAM       ; Switch to external ram, no bank offsets.
     ld (BANK_CONTROL),a
-    ;
-    ; Clear external ram.
-    ld bc,$4000
-    ld hl,EXTRAM_START
+    ld bc,EXTRAM_SIZE               ; Every byte in external ram.
+    ld hl,EXTRAM_START              ; Begin from the first byte.
     -:
-      xor a
+      xor a                         ; Write zeroes over all external ram bytes.
       ld (hl),a
       inc hl
       dec bc
@@ -152,54 +152,42 @@
       or c
     jp nz,-
     ;
-    ld hl,extram_header
-    call word_get
-    ld a,$fe
-    ld (hl),a
-    ld hl,extram_header
-    call word_inc
-    ;
-    ld hl,extram_header
-    call word_get
-    ld a,$fd
-    ld (hl),a
-    ;
     ld a,NO_OFFSET_SELECT_ROM       ; Switch back to rom, no bank offsets.
     ld (BANK_CONTROL),a
+    ; Turn on screen and frame interrupts.
+    ld a,DISPLAY_1_FRAME_1_SIZE_0
+    ld b,1
+    call set_register
+    ei
     ; When all is set, change the game state.
     ld a,GS_DEVMODE
     ld (game_state),a
   jp main_loop
-  word_get:
-    ; Loads word-sized variable into HL.
-    ; Entry: HL: Pointer to variable address.
-    ; Exit: HL: Value of the variable.
-    ; Registers used: None.
-    push af
-    ld a,(hl)
-    inc hl
-    ld h,(hl)
-    ld l,a
-    pop af
-  ret
-  word_inc:
-    ; Increments a word-sized variable at HL.
-    ; Entry: HL = Pointer to variable.
-    ; Exit: None
-    ; Registers used: None.
-    push af
-    ld a,(hl)
-    inc a
-    ld (hl),a
-    jp po,+
-      inc hl
-      inc (hl)
-    +:
-    pop af
-  ret
   ; ---------------------------------------------------------------------------
   run_devmode:
   ;
+  call await_frame_interrupt
+  call GetInputPorts
+  ;
+  ; Save the input ports at every 255th frame (4-5 sec).
+  ld a,(frame_counter)
+  dec a
+  ld (frame_counter),a
+  or a
+  jp nz,+
+    ld a,NO_OFFSET_SELECT_RAM       ; Switch to external ram, no bank offsets.
+    ld (BANK_CONTROL),a
+    ;
+    ld hl,extram_header             ; Get extram header address.
+    call word_get
+    ld a,(InputPorts)               ; Read the variable set by GetInputPorts.
+    ld (hl),a                       ; Write the InputPort state to extram.
+    ld hl,extram_header             ; Increment the header (word).
+    call word_inc
+    ;
+    ld a,NO_OFFSET_SELECT_ROM       ; Switch back to rom, no bank offsets.
+    ld (BANK_CONTROL),a
+  +:
   jp main_loop
 .ends
 ;

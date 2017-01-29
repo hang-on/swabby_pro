@@ -40,6 +40,7 @@
 .equ NO_OFFSET_SELECT_ROM %00000000
 
 .equ EXTRAM_START $8000
+.equ EXTRAM_SIZE $4000
 
 .equ HORIZONTAL_SCROLL_REGISTER 8
 .equ VERTICAL_SCROLL_REGISTER 9
@@ -523,5 +524,42 @@
     ld a,REGISTER_WRITE_COMMAND
     or b
     out (CONTROL_PORT),a
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
+.section "Word Get" free
+; -----------------------------------------------------------------------------
+  word_get:
+    ; Load word-sized variable into HL.
+    ; Entry: HL = Pointer to variable address.
+    ; Exit: HL = Value of the variable.
+    ; Preserves all registers.
+    push af
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+    pop af
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
+.section "Word Inc" free
+; -----------------------------------------------------------------------------
+  word_inc:
+    ; Increments a word-sized variable at HL.
+    ; Entry: HL = Pointer to variable.
+    ; Exit: None
+    ; Preserves all registers.
+    push af
+    ld a,(hl)
+    inc a
+    ld (hl),a
+    jp po,+
+      inc hl
+      inc (hl)
+    +:
+    pop af
   ret
 .ends
