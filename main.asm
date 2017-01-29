@@ -22,6 +22,7 @@
 .ramsection "Main variables" slot 3
   game_state db                   ; Contains game state.
   frame_counter db                ; Used in some loops.
+  extram_header dw                 ; Points inside the external ram.
   ;
   blinker_timer db                ; The speed of the titlesreen blinker.
   ;
@@ -130,6 +131,9 @@
   ;
   ; ---------------------------------------------------------------------------
   run_devmode:
+
+
+    ; Sample code to save $ff at first ram position.
     ld a,NO_OFFSET_SELECT_RAM
     ld (BANK_CONTROL),a
     ld a,$ff
