@@ -130,7 +130,12 @@
   ;
   ; ---------------------------------------------------------------------------
   run_devmode:
-
+    ld a,NO_OFFSET_SELECT_RAM
+    ld (BANK_CONTROL),a
+    ld a,$ff
+    ld ($8000),a
+    ld a,NO_OFFSET_SELECT_ROM
+    ld (BANK_CONTROL),a
   jp main_loop
   ;
 .ends
