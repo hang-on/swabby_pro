@@ -7,6 +7,9 @@
   .equ GS_BOOT 0
   .equ GS_PREPARE_TITLESCREEN 1
   .equ GS_RUN_TITLESCREEN 2
+  .equ GS_DEVMODE 100
+  ;
+  .equ INITIAL_GAME_STATE GS_DEVMODE ; Where to go after boot?
 ; Titlesreen assets:
   .equ TITLESCREEN_BANK 2         ; Titlesreen assets are in bank 2.
   .equ BLINKER_WIDTH 18           ; The blinking "press start button" message
@@ -38,7 +41,7 @@
     ld hl,pico8_palette
     call load_cram
     ;
-    ld a,GS_PREPARE_TITLESCREEN
+    ld a,INITIAL_GAME_STATE
     ld (game_state),a
   jp main_loop
   ;
@@ -53,6 +56,8 @@
     jp z,prepare_titlescreen
     cp GS_RUN_TITLESCREEN
     jp z,run_titlescreen
+    cp GS_DEVMODE
+    jp z,run_devmode
   jp main_loop
   ;
   ; ---------------------------------------------------------------------------
@@ -121,6 +126,11 @@
     ; Non-VBlank stuff goes here...
     ld hl,frame_counter
     inc (hl)
+  jp main_loop
+  ;
+  ; ---------------------------------------------------------------------------
+  run_devmode:
+
   jp main_loop
   ;
 .ends
