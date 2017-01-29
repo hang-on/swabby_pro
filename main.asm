@@ -7,9 +7,10 @@
   .equ GS_BOOT 0
   .equ GS_PREPARE_TITLESCREEN 1
   .equ GS_RUN_TITLESCREEN 2
-  .equ GS_DEVMODE 100
+  .equ GS_PREPARE_DEVMODE 100
+  .equ GS_DEVMODE 101
   ;
-  .equ INITIAL_GAME_STATE GS_DEVMODE ; Where to go after boot?
+  .equ INITIAL_GAME_STATE GS_PREPARE_DEVMODE ; Where to go after boot?
 ; Titlesreen assets:
   .equ TITLESCREEN_BANK 2         ; Titlesreen assets are in bank 2.
   .equ BLINKER_WIDTH 18           ; The blinking "press start button" message
@@ -57,6 +58,8 @@
     jp z,prepare_titlescreen
     cp GS_RUN_TITLESCREEN
     jp z,run_titlescreen
+    cp GS_PREPARE_DEVMODE
+    jp z,prepare_devmode
     cp GS_DEVMODE
     jp z,run_devmode
   jp main_loop
@@ -130,17 +133,39 @@
   jp main_loop
   ;
   ; ---------------------------------------------------------------------------
+  prepare_devmode:
+    ld hl,EXTRAM_START
+    ld (extram_header),hl
+    ; When all is set, change the game state.
+    ld a,GS_DEVMODE
+    ld (game_state),a
+  jp main_loop
+  ; ---------------------------------------------------------------------------
   run_devmode:
-
-
     ; Sample code to save $ff at first ram position.
-    ld a,NO_OFFSET_SELECT_RAM
+    ld a,NO_OFFSET_SELECT_RAM       ; Switch to external ram, no bank offsets.
     ld (BANK_CONTROL),a
-    ld a,$ff
-    ld ($8000),a
-    ld a,NO_OFFSET_SELECT_ROM
+    ;
+    ld hl,extram_header
+    call word_get
+    ld a,$fe
+    ld (hl),a
+    ;
+    ld a,NO_OFFSET_SELECT_ROM       ; Switch back to rom, no bank offsets.
     ld (BANK_CONTROL),a
   jp main_loop
+  word_get:
+    ; Loads word-sized variable into HL.
+    ; Entry: HL: Pointer to variable address.
+    ; Exit: HL: Value of the variable.
+    ; Registers used: None.
+    push af
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+    pop af
+  ret
   ;
 .ends
 ;
