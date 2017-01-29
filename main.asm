@@ -136,23 +136,39 @@
   prepare_devmode:
     ld hl,EXTRAM_START
     ld (extram_header),hl
-    ; When all is set, change the game state.
-    ld a,GS_DEVMODE
-    ld (game_state),a
-  jp main_loop
-  ; ---------------------------------------------------------------------------
-  run_devmode:
-    ; Sample code to save $ff at first ram position.
+    ;
     ld a,NO_OFFSET_SELECT_RAM       ; Switch to external ram, no bank offsets.
     ld (BANK_CONTROL),a
+    ;
+    ; Clear external ram.
+    ld bc,$4000
+    ld hl,EXTRAM_START
+    -:
+      xor a
+      ld (hl),a
+      inc hl
+      dec bc
+      ld a,b
+      or c
+    jp nz,-
     ;
     ld hl,extram_header
     call word_get
     ld a,$fe
     ld (hl),a
+    ld hl,extram_header
+    call word_inc
+    ;
+    ld hl,extram_header
+    call word_get
+    ld a,$fd
+    ld (hl),a
     ;
     ld a,NO_OFFSET_SELECT_ROM       ; Switch back to rom, no bank offsets.
     ld (BANK_CONTROL),a
+    ; When all is set, change the game state.
+    ld a,GS_DEVMODE
+    ld (game_state),a
   jp main_loop
   word_get:
     ; Loads word-sized variable into HL.
@@ -166,7 +182,25 @@
     ld l,a
     pop af
   ret
+  word_inc:
+    ; Increments a word-sized variable at HL.
+    ; Entry: HL = Pointer to variable.
+    ; Exit: None
+    ; Registers used: None.
+    push af
+    ld a,(hl)
+    inc a
+    ld (hl),a
+    jp po,+
+      inc hl
+      inc (hl)
+    +:
+    pop af
+  ret
+  ; ---------------------------------------------------------------------------
+  run_devmode:
   ;
+  jp main_loop
 .ends
 ;
 .bank 1 slot 1
