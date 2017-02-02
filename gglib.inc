@@ -223,6 +223,26 @@
   ret
 .ends
 
+; -----------------------------------------------------------------------------
+.section "clear_extram" free
+; -----------------------------------------------------------------------------
+  ; Clear external ram by writing zeroes to all bytes.
+  ; Uses AF, BC, HL
+  clear_extram:
+    SELECT_EXTRAM
+    ld bc,EXTRAM_SIZE               ; Every byte in external ram.
+    ld hl,EXTRAM_START              ; Begin from the first byte.
+    -:
+      xor a                         ; Write zeroes over all external ram bytes.
+      ld (hl),a
+      inc hl
+      dec bc
+      ld a,b
+      or c
+    jp nz,-
+    SELECT_ROM
+  ret
+.ends
 
 ; -----------------------------------------------------------------------------
 .section "ClearRam" free

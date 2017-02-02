@@ -7,10 +7,10 @@
   .equ GS_BOOT 0
   .equ GS_PREPARE_TITLESCREEN 1
   .equ GS_RUN_TITLESCREEN 2
-  .equ GS_PREPARE_DEVMODE 100
-  .equ GS_DEVMODE 101
+  .equ GS_PREPARE_RECORDER 100
+  .equ GS_RUN_RECORDER 101
   ;
-  .equ INITIAL_GAME_STATE GS_PREPARE_DEVMODE ; Where to go after boot?
+  .equ INITIAL_GAME_STATE GS_PREPARE_RECORDER ; Where to go after boot?
 ; Titlesreen assets:
   .equ TITLESCREEN_BANK 2         ; Titlesreen assets are in bank 2.
   .equ BLINKER_WIDTH 18           ; The blinking "press start button" message
@@ -58,10 +58,10 @@
     jp z,prepare_titlescreen
     cp GS_RUN_TITLESCREEN
     jp z,run_titlescreen
-    cp GS_PREPARE_DEVMODE
-    jp z,prepare_devmode
-    cp GS_DEVMODE
-    jp z,run_devmode
+    cp GS_PREPARE_RECORDER
+    jp z,prepare_recorder
+    cp GS_RUN_RECORDER
+    jp z,run_recorder
   jp main_loop
   ;
   ; ---------------------------------------------------------------------------
@@ -133,7 +133,7 @@
   jp main_loop
   ;
   ; ---------------------------------------------------------------------------
-  prepare_devmode:
+  prepare_recorder:
     ld hl,EXTRAM_START              ; Point extram_header to the start
     ld (extram_header),hl           ; of external ram bank ($8000).
     ld a,1                          ; Set up frame counter to that it will
@@ -145,25 +145,11 @@
     call set_register
     ei
     ; When all is set, change the game state.
-    ld a,GS_DEVMODE
+    ld a,GS_RUN_RECORDER
     ld (game_state),a
   jp main_loop
-  clear_extram:
-    SELECT_EXTRAM
-    ld bc,EXTRAM_SIZE               ; Every byte in external ram.
-    ld hl,EXTRAM_START              ; Begin from the first byte.
-    -:
-      xor a                         ; Write zeroes over all external ram bytes.
-      ld (hl),a
-      inc hl
-      dec bc
-      ld a,b
-      or c
-    jp nz,-
-    SELECT_ROM
-  ret
   ; ---------------------------------------------------------------------------
-  run_devmode:
+  run_recorder:
   ;
   call await_frame_interrupt
   call GetInputPorts
@@ -174,18 +160,14 @@
   ld (frame_counter),a
   or a
   jp nz,+
-    ld a,NO_OFFSET_SELECT_RAM       ; Switch to external ram, no bank offsets.
-    ld (BANK_CONTROL),a
-    ;
+    SELECT_EXTRAM
     ld hl,extram_header             ; Get extram header address.
     call word_get
     ld a,(InputPorts)               ; Read the variable set by GetInputPorts.
     ld (hl),a                       ; Write the InputPort state to extram.
     ld hl,extram_header             ; Increment the header (word).
     call word_inc
-    ;
-    ld a,NO_OFFSET_SELECT_ROM       ; Switch back to rom, no bank offsets.
-    ld (BANK_CONTROL),a
+    SELECT_ROM
   +:
   jp main_loop
 .ends
