@@ -138,9 +138,18 @@
     ld (extram_header),hl           ; of external ram bank ($8000).
     ld a,1                          ; Set up frame counter to that it will
     ld (frame_counter),a            ; reach zero at first decrement.
-    ; Clear external ram.
-    ld a,NO_OFFSET_SELECT_RAM       ; Switch to external ram, no bank offsets.
-    ld (BANK_CONTROL),a
+    call clear_extram
+    ; Turn on screen and frame interrupts.
+    ld a,DISPLAY_1_FRAME_1_SIZE_0
+    ld b,1
+    call set_register
+    ei
+    ; When all is set, change the game state.
+    ld a,GS_DEVMODE
+    ld (game_state),a
+  jp main_loop
+  clear_extram:
+    SELECT_EXTRAM
     ld bc,EXTRAM_SIZE               ; Every byte in external ram.
     ld hl,EXTRAM_START              ; Begin from the first byte.
     -:
@@ -151,18 +160,8 @@
       ld a,b
       or c
     jp nz,-
-    ;
-    ld a,NO_OFFSET_SELECT_ROM       ; Switch back to rom, no bank offsets.
-    ld (BANK_CONTROL),a
-    ; Turn on screen and frame interrupts.
-    ld a,DISPLAY_1_FRAME_1_SIZE_0
-    ld b,1
-    call set_register
-    ei
-    ; When all is set, change the game state.
-    ld a,GS_DEVMODE
-    ld (game_state),a
-  jp main_loop
+    SELECT_ROM
+  ret
   ; ---------------------------------------------------------------------------
   run_devmode:
   ;
