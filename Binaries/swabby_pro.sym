@@ -33,6 +33,7 @@
 0000:0071 init
 0000:0083 pico8_palette
 0000:00a3 main_loop
+0000:00b3 jump_table
 0000:00bd prepare_titlescreen
 0000:0102 run_titlescreen
 0000:013c prepare_recorder

@@ -7,10 +7,10 @@
   .equ GS_BOOT 0
   .equ GS_PREPARE_TITLESCREEN 1
   .equ GS_RUN_TITLESCREEN 2
-  .equ GS_PREPARE_RECORDER 100
-  .equ GS_RUN_RECORDER 101
+  .equ GS_PREPARE_RECORDER 3
+  .equ GS_RUN_RECORDER 4
   ;
-  .equ INITIAL_GAME_STATE GS_PREPARE_RECORDER ; Where to go after boot?
+  .equ INITIAL_GAME_STATE GS_PREPARE_TITLESCREEN ; Where to go after boot?
 ; Titlesreen assets:
   .equ TITLESCREEN_BANK 2         ; Titlesreen assets are in bank 2.
   .equ BLINKER_WIDTH 18           ; The blinking "press start button" message
@@ -54,15 +54,21 @@
   main_loop:
     ; Note: This loop can begin on any line - wait for vblank in the states!
     ld a,(game_state)
-    cp GS_PREPARE_TITLESCREEN
-    jp z,prepare_titlescreen
-    cp GS_RUN_TITLESCREEN
-    jp z,run_titlescreen
-    cp GS_PREPARE_RECORDER
-    jp z,prepare_recorder
-    cp GS_RUN_RECORDER
-    jp z,run_recorder
-  jp main_loop
+    add a,a
+    ld h,0
+    ld l,a
+    ld de,jump_table
+    add hl,de
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+    jp (hl)
+    ;
+  jump_table:
+    ; Check the game state constants.
+    .dw init, prepare_titlescreen, run_titlescreen
+    .dw prepare_recorder, run_recorder
   ;
   ; ---------------------------------------------------------------------------
   prepare_titlescreen:
