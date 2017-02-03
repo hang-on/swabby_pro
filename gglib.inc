@@ -304,6 +304,43 @@
 .ends
 
 ; -----------------------------------------------------------------------------
+.section "Get Word" free
+; -----------------------------------------------------------------------------
+  get_word:
+    ; Load word-sized variable into HL.
+    ; Entry: HL = Pointer to variable address.
+    ; Exit: HL = Value of the variable.
+    ; Preserves all registers.
+    push af
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+    pop af
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
+.section "Increment Word" free
+; -----------------------------------------------------------------------------
+  inc_word:
+    ; Increments a word-sized variable at HL.
+    ; Entry: HL = Pointer to variable.
+    ; Exit: None
+    ; Preserves all registers.
+    push af
+    ld a,(hl)
+    inc a
+    ld (hl),a
+    jp po,+
+      inc hl
+      inc (hl)
+    +:
+    pop af
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
 .section "InitializeVDPRegisters" free
 ; -----------------------------------------------------------------------------
 ; Initialize the 11 VDP registers with the preset data block.
@@ -560,42 +597,5 @@
     ld a,REGISTER_WRITE_COMMAND
     or b
     out (CONTROL_PORT),a
-  ret
-.ends
-
-; -----------------------------------------------------------------------------
-.section "Word Get" free
-; -----------------------------------------------------------------------------
-  word_get:
-    ; Load word-sized variable into HL.
-    ; Entry: HL = Pointer to variable address.
-    ; Exit: HL = Value of the variable.
-    ; Preserves all registers.
-    push af
-    ld a,(hl)
-    inc hl
-    ld h,(hl)
-    ld l,a
-    pop af
-  ret
-.ends
-
-; -----------------------------------------------------------------------------
-.section "Word Inc" free
-; -----------------------------------------------------------------------------
-  word_inc:
-    ; Increments a word-sized variable at HL.
-    ; Entry: HL = Pointer to variable.
-    ; Exit: None
-    ; Preserves all registers.
-    push af
-    ld a,(hl)
-    inc a
-    ld (hl),a
-    jp po,+
-      inc hl
-      inc (hl)
-    +:
-    pop af
   ret
 .ends

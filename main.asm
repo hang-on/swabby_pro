@@ -168,11 +168,11 @@
   jp nz,+
     SELECT_EXTRAM
     ld hl,extram_header             ; Get extram header address.
-    call word_get
+    call get_word
     ld a,(InputPorts)               ; Read the variable set by GetInputPorts.
     ld (hl),a                       ; Write the InputPort state to extram.
     ld hl,extram_header             ; Increment the header (word).
-    call word_inc
+    call inc_word
     SELECT_ROM
   +:
   jp main_loop
