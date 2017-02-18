@@ -41,3 +41,9 @@ first element and look for the first element that is inactive. When found, this
 element is updated with the desired enemy/bullet data, and set to active.
 
 On each update, every element is examined. If active, then it is processed.
+
+MEKA: Sprite sheet width = 16 tiles.
+Amount of tiles available in bank 2: 256 - (512 - 448) = 192.
+This bank contains the sprites.
+Spritesheet must be 16 x 12 tiles = 128 x 96 pixels.
+Bank 1 contains the background (256 tiles avail. for background).
