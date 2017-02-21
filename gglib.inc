@@ -291,11 +291,11 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "GetInputPorts" free
+.section "get_input_ports" free
 ; -----------------------------------------------------------------------------
   ; Set InputPorts (word) to mirror current state of ports $dc and $dd.
   ; Uses: AF
-  GetInputPorts:
+  get_input_ports:
     in a,(INPUT_PORT_1)
     ld (InputPorts),a
     in a,(INPUT_PORT_2)

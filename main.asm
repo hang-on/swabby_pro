@@ -161,7 +161,7 @@
   run_recorder:
   ;
   call await_frame_interrupt
-  call GetInputPorts
+  call get_input_ports
   ;
   ; Save the input ports at every 255th frame (4-5 sec).
   ld a,(frame_counter)
@@ -198,7 +198,7 @@
   run_sandbox:
     ; Run sandbox mode...
     call await_frame_interrupt
-    call GetInputPorts
+    call get_input_ports
     ;
     jp main_loop
     ;
