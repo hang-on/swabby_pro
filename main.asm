@@ -1,5 +1,6 @@
 .include "gglib.inc"
 .include "gglib_extended.inc"
+.include "spritelib.inc"
 ;
 ; Misc. definitions:
   .equ PICO8_PALETTE_SIZE 16
@@ -9,6 +10,8 @@
   .equ GS_RUN_TITLESCREEN 2
   .equ GS_PREPARE_RECORDER 3
   .equ GS_RUN_RECORDER 4
+  .equ GS_PREPARE_SANDBOX 5
+  .equ GS_RUN_SANDBOX 6
   ;
   .equ INITIAL_GAME_STATE GS_PREPARE_TITLESCREEN ; Where to go after boot?
 ; Titlesreen assets:
@@ -68,7 +71,7 @@
   jump_table:
     ; Check the game state constants.
     .dw init, prepare_titlescreen, run_titlescreen
-    .dw prepare_recorder, run_recorder
+    .dw prepare_recorder, run_recorder, prepare_sandbox, run_sandbox
   ;
   ; ---------------------------------------------------------------------------
   prepare_titlescreen:
@@ -176,6 +179,30 @@
     SELECT_ROM
   +:
   jp main_loop
+  ;
+  ; ---------------------------------------------------------------------------
+  prepare_sandbox:
+    ; Prepare the sandbox mode
+
+    ;
+    ; Turn on screen and frame interrupts.
+    ld a,DISPLAY_1_FRAME_1_SIZE_0
+    ld b,1
+    call set_register
+    ei
+    ; When all is set, change the game state.
+    ld a,GS_RUN_SANDBOX
+    ld (game_state),a
+  jp main_loop
+  ; ---------------------------------------------------------------------------
+  run_sandbox:
+    ; Run sandbox mode...
+    call await_frame_interrupt
+    call GetInputPorts
+    ;
+    jp main_loop
+    ;
+
 .ends
 ;
 .bank 1 slot 1
