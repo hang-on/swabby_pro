@@ -138,7 +138,7 @@
     ; Batchload tiles from a table into the spritebank.
     ; Spritebank table format (byte, word, word):
     ; i nnnn pppp
-    ; i = index, n = number of bytes to load, p = pointer to tiles data.
+    ; i = index, n = number of bytes to load, p = pointer to tile data.
     ; Terminate table with byte END_OF_TABLE ($ff).
     ; HL = Pointer to spritebank table.
     ; Uses: AF, BC, DE, HL
