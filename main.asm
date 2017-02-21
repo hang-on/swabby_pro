@@ -13,7 +13,7 @@
   .equ GS_PREPARE_SANDBOX 5
   .equ GS_RUN_SANDBOX 6
   ;
-  .equ INITIAL_GAME_STATE GS_PREPARE_TITLESCREEN ; Where to go after boot?
+  .equ INITIAL_GAME_STATE GS_PREPARE_SANDBOX ; Where to go after boot?
 ; Titlesreen assets:
   .equ TITLESCREEN_BANK 2         ; Titlesreen assets are in bank 2.
   .equ BLINKER_WIDTH 18           ; The blinking "press start button" message
@@ -198,7 +198,14 @@
   run_sandbox:
     ; Run sandbox mode...
     call await_frame_interrupt
+    call load_sat
+
     call get_input_ports
+    call begin_sprites
+    ld a,1
+    ld b,2
+    ld c,3
+    call add_sprite
     ;
     jp main_loop
     ;

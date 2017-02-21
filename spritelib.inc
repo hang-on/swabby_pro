@@ -1,10 +1,8 @@
 ; *****************************************************************************
 ;                           SPRITE LIBRARY
 ; *****************************************************************************
-; Note: Spritelib depends on constants from Base.inc.
+; Note: Spritelib depends on constants from gglib.inc.
 
-.equ FIRST_FREE_SPRITE 0    ; First sprite controlled by this library.
-                            ; FIXME - Library actually assumes full control.
 .equ ASCENDING 0
 .equ DESCENDING $ff
 
@@ -23,14 +21,95 @@
   MetaSpriteSize db
   SATLoadMode db             ; Ascending or descending - for flickering.
 .ends
+
 ; -----------------------------------------------------------------------------
-.section "LoadSAT" free
+.section "add_sprite" free
+; -----------------------------------------------------------------------------
+  ; Add a sprite of size = 1 character to the SAT.
+  ; Entry: A = Character code (character in bank 2).
+  ;        B = vertical position, C = horizontal position.
+  ; Exit:
+  ; Uses: N.A.
+  add_sprite:
+
+    push af
+    push bc
+
+    ; Test for sprite overflow (more than 64 hardware sprites at once).
+    ld a,(NextFreeSprite)
+    add a,b
+    cp 65
+    ret nc
+
+    ; Point DE to SpriteBufferY[NextFreeSprite].
+    ld a,(NextFreeSprite)
+    ld de,SpriteBufferY
+    add a,e
+    ld e,a
+    ld a,0
+    adc a,d
+    ld d,a
+
+    ; Retrieve Y and X coords.
+    pop bc
+    ld a,b
+    ld (de),a               ; Write the Y to the sprite buffer.
+
+    ; Point DE to SpriteBufferXC[NextFreeSprite].
+    ld a,(NextFreeSprite)
+    ld de,SpriteBufferXC
+    add a,e
+    ld e,a
+    ld a,0
+    adc a,d
+    ld d,a
+
+
+    ld a,c                ; Get the x-pos.
+    ld (de),a             ; Write it to the buffer.
+    inc de
+    pop af                ; Retrieve the charcode.
+    ld (de),a             ; Write it to the buffer
+
+    ld hl,NextFreeSprite
+    inc (hl)
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
+.section "begin_sprites" free
+; -----------------------------------------------------------------------------
+  WipeData:
+    .rept 64
+      .db SPRITE_TERMINATOR
+    .endr
+
+  begin_sprites:
+    ; Reset the NextFreeSprite index at the beginning of every frame
+    xor a
+    ld (NextFreeSprite),a
+
+    ; Toggle ascending/descending sat load mode.
+    ld a,(SATLoadMode)
+    cpl
+    ld (SATLoadMode),a
+
+    ; Wipe Y-buffer with $e0 to get unused sprites out of the way.
+    ld hl,WipeData
+    ld de,SpriteBufferY
+    ld bc,64
+    ldir
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
+.section "load_sat" free
 ; -----------------------------------------------------------------------------
   ; Load the vram sat with the SatY and SatXC buffers.
   ; Sonic 2 inspired flicker engine is in place: Flicker sprites by loading the
   ; SAT in ascending/descending order every other frame. Always keep first 8
   ; sprites on top (for a non-flickering master object, i.e. the player).
-  LoadSAT:
+  load_sat:
     ld a,(SATLoadMode)
     cp DESCENDING
     jp z,_DescendingLoad
@@ -104,34 +183,25 @@
         add hl,de
       .endr
   ret
-
 .ends
 
-; -----------------------------------------------------------------------------
-.section "BeginMetaSprites" free
-; -----------------------------------------------------------------------------
-  WipeData:
-    .rept 64
-      .db $e0
-    .endr
 
-  BeginMetaSprites:
-    ; Reset the NextFreeSprite index at the beginning of every frame
-    ld a,FIRST_FREE_SPRITE
-    ld (NextFreeSprite),a
 
-    ; Toggle ascending/descending sat load mode.
-    ld a,(SATLoadMode)
-    cpl
-    ld (SATLoadMode),a
 
-    ; Wipe Y-buffer with $e0 to get unused sprites out of the way.
-    ld hl,WipeData
-    ld de,SpriteBufferY
-    ld bc,64
-    ldir
-  ret
-.ends
+
+
+
+
+
+
+
+
+
+
+
+
+; ---- OLD STUFF SMS RELATED
+
 
 ; -----------------------------------------------------------------------------
 .section "AddMetaSprite" free
@@ -313,36 +383,5 @@
     ld a,(NextFreeSprite) ; add the size of the processed metasprite
     add a,(hl)
     ld (NextFreeSprite),a
-  ret
-.ends
-
-; -----------------------------------------------------------------------------
-.section "FinalizeMetaSprites" free
-; -----------------------------------------------------------------------------
-  FinalizeMetaSprites:
-    ; Anti-flickering measure:
-    ; Go through all x positions in the table (active sprites only). If x = 0
-    ; (sprite is under the blanked column 0-7), let its y-pos be $e0, thus it
-    ; will be moved away from the active display, and not count towards sprite
-    ; on scanline limits.
-    ld a,(NextFreeSprite)
-    or a
-    ret z
-
-    ld de,SpriteBufferXC
-    ld hl,SpriteBufferY
-    ld a,(NextFreeSprite)
-    ld b,a
-    ld c,$e0
-    -:
-      ld a,(de)
-      or a
-      jp nz,+
-        ld (hl),c
-      +:
-      inc de
-      inc de
-      inc hl
-    djnz -
   ret
 .ends
