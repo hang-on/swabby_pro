@@ -20,6 +20,8 @@
   .equ BLINKER_HEIGHT 1           ; is 18 tiles wide (and a single tile high).
   .equ BLINKER_ADDRESS $3b8e      ; Address of first name table element.
   .equ BLINKER_DURATION 100       ; Number of frames between on/off.
+; Sandbox assets:
+  .equ SANDBOX_BANK 3             ; Pico-8 sandbox assets are in bank 3.
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -183,7 +185,11 @@
   ; ---------------------------------------------------------------------------
   prepare_sandbox:
     ; Prepare the sandbox mode
-
+    SELECT_BANK SANDBOX_BANK
+    ld bc,sandbox_tiles_end-sandbox_tiles
+    ld de,$0e00                             ; Address of tile nr. 128 - 16
+    ld hl,sandbox_tiles                     ; This will load 127 tiles to the
+    call load_vram                          ; first bank and 127 to the second.
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
@@ -239,4 +245,13 @@
   blinker_tiles:
     .include "bank_2\blinker_tiles.inc"
   blinker_tiles_end:
+.ends
+;
+.bank SANDBOX_BANK slot 2
+; -----------------------------------------------------------------------------
+.section "Sandbox assets" free
+; -----------------------------------------------------------------------------
+  sandbox_tiles:
+    .include "bank_3\spritesheet.png_tiles.inc"
+  sandbox_tiles_end:
 .ends
