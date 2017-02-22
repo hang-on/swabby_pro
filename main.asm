@@ -198,8 +198,10 @@
   run_sandbox:
     ; Run sandbox mode...
     call await_frame_interrupt
+    ; draw()
     call load_sat
 
+    ; update()
     call get_input_ports
     call begin_sprites
     ld a,1
