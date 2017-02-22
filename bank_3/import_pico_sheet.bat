@@ -3,6 +3,7 @@ echo off
 :: This tool is used to grab an exported spritesheet from pico-8 and convert
 :: it to tiles for GG programming. Adjust the folder and/or filename below as
 :: appropriate.
+:: NOTE: Depends on a special pico-8 colormap.png being present in the folder.
 
 SET folder=c:\users\ansj\dropbox\pico-8\carts\swabby_pro\
 SET filename=spritesheet.png

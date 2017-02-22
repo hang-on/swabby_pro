@@ -20,8 +20,10 @@
   .equ BLINKER_HEIGHT 1           ; is 18 tiles wide (and a single tile high).
   .equ BLINKER_ADDRESS $3b8e      ; Address of first name table element.
   .equ BLINKER_DURATION 100       ; Number of frames between on/off.
-; Sandbox assets:
+; Sandbox:
   .equ SANDBOX_BANK 3             ; Pico-8 sandbox assets are in bank 3.
+  .equ SWABBY_IDLE 0
+  .equ SWABBY_MOVING 1
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,6 +38,14 @@
   temp_word dw
   temp_buffer dsb 32*2
 .ends
+.ramsection "Sandbox variables" slot 3
+  swabby_y db
+  swabby_x db
+  swabby_state db
+  swabby_state_timer db
+  swabby_direction db
+.ends
+;
 .bank 0 slot 0
 ; -----------------------------------------------------------------------------
 .section "main" free
@@ -210,14 +220,17 @@
     ; update()
     call get_input_ports
     call begin_sprites
-    ld a,1
-    ld b,2
-    ld c,3
+    ; FIXME! Move Swabby to the right...
+    ld a,(swabby_x)
+    inc a
+    ld (swabby_x),a
+    ld c,a
+    ld a,SWABBY_MOVING
+    ld b,50
     call add_sprite
     ;
     jp main_loop
     ;
-
 .ends
 ;
 .bank 1 slot 1
