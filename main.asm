@@ -249,6 +249,18 @@
     jp nz,skip_moving
       ld a,SWABBY_MOVING_SPRITE
       ld (swabby_sprite),a
+      call IsPlayer1RightPressed
+      jp nc,+
+        ld a,(swabby_x)
+        inc a
+        ld (swabby_x),a
+      +:
+      call IsPlayer1LeftPressed
+      jp nc,+
+        ld a,(swabby_x)
+        dec a
+        ld (swabby_x),a
+      +:
       call is_dpad_pressed
       jp c,skip_moving
         ld a,SWABBY_IDLE
