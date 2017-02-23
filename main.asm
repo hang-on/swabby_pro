@@ -234,7 +234,8 @@
     ld b,(hl)
     inc hl
     ld c,(hl)
-    ld a,SWABBY_IDLE
+    inc hl
+    ld a,(hl)
     call add_sprite
     ; Other sprites go here...
     ;
