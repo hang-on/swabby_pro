@@ -37,7 +37,7 @@
 
     ; Test for sprite overflow (more than 64 hardware sprites at once).
     ld a,(NextFreeSprite)
-    add a,b
+    inc a
     cp 65
     ret nc
 

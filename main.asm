@@ -26,7 +26,7 @@
   .equ SWABBY_IDLE 0
   .equ SWABBY_MOVING 1
   .equ SWABBY_X_INIT 48
-  .equ SWABBY_Y_INIT 24
+  .equ SWABBY_Y_INIT $40
   .equ SWABBY_IDLE_SPRITE 0
   .equ SWABBY_MOVING_SPRITE 1
 ;
@@ -233,20 +233,23 @@
     call get_input_ports
     ld hl,swabby_state_timer
     inc (hl)
-    ; Handle the swabby state machine.
+    ;
     ld a,(swabby_state)
     cp SWABBY_IDLE
     jp nz,skip_idle
+      ; Handle Swabby idle state.
       ld a,SWABBY_IDLE_SPRITE
       ld (swabby_sprite),a
       call is_dpad_pressed
       jp nc,skip_idle
+        ; If dpad is pressed while idle, change state to moving.
         ld a,SWABBY_MOVING
         call change_swabby_state
     skip_idle:
     ld a,(swabby_state)
     cp SWABBY_MOVING
     jp nz,skip_moving
+      ; Handle Swabby moving state.
       ld a,SWABBY_MOVING_SPRITE
       ld (swabby_sprite),a
       call IsPlayer1RightPressed
@@ -261,8 +264,21 @@
         dec a
         ld (swabby_x),a
       +:
+      call IsPlayer1DownPressed
+      jp nc,+
+        ld a,(swabby_y)
+        inc a
+        ld (swabby_y),a
+      +:
+      call IsPlayer1UpPressed
+      jp nc,+
+        ld a,(swabby_y)
+        dec a
+        ld (swabby_y),a
+      +:
       call is_dpad_pressed
       jp c,skip_moving
+        ; If no dpad action while moving, then change back to idle.
         ld a,SWABBY_IDLE
         call change_swabby_state
     skip_moving:
