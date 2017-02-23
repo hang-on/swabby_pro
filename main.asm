@@ -24,6 +24,8 @@
   .equ SANDBOX_BANK 3             ; Pico-8 sandbox assets are in bank 3.
   .equ SWABBY_IDLE 0
   .equ SWABBY_MOVING 1
+  .equ SWABBY_X_INIT 48
+  .equ SWABBY_Y_INIT 24
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -200,7 +202,11 @@
     ld de,$0e00                             ; Address of tile nr. 128 - 16
     ld hl,sandbox_tiles                     ; This will load 127 tiles to the
     call load_vram                          ; first bank and 127 to the second.
-    ;
+    ; Initialize the variables.
+    ld a,SWABBY_Y_INIT
+    ld (swabby_y),a
+    ld a,SWABBY_X_INIT
+    ld (swabby_x),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -219,15 +225,16 @@
 
     ; update()
     call get_input_ports
+
     call begin_sprites
-    ; FIXME! Move Swabby to the right...
-    ld a,(swabby_x)
-    inc a
-    ld (swabby_x),a
-    ld c,a
+    ; Put the swabby sprite in the buffer.
+    ld hl,swabby_y
+    ld b,(hl)
+    inc hl
+    ld c,(hl)
     ld a,SWABBY_MOVING
-    ld b,50
     call add_sprite
+    ; Other sprites go here...
     ;
     jp main_loop
     ;
