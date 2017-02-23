@@ -32,7 +32,7 @@
 .ramsection "Main variables" slot 3
   game_state db                   ; Contains game state.
   frame_counter db                ; Used in some loops.
-  extram_header dw                 ; Points inside the external ram.
+  extram_header dw                ; Points inside the external ram.
   ;
   blinker_timer db                ; The speed of the titlesreen blinker.
   ;
@@ -41,7 +41,7 @@
   temp_buffer dsb 32*2
 .ends
 .ramsection "Sandbox variables" slot 3
-  swabby_y db
+  swabby_y db                     ; The order of these vars cannot change!
   swabby_x db
   swabby_state db
   swabby_state_timer db
@@ -220,19 +220,21 @@
   run_sandbox:
     ; Run sandbox mode...
     call await_frame_interrupt
-    ; draw()
+    ; draw() ----- operations during vblank.
     call load_sat
-
+    ;
     ; update()
     call get_input_ports
-
+    ld hl,swabby_state_timer
+    inc (hl)
+    ;
     call begin_sprites
     ; Put the swabby sprite in the buffer.
     ld hl,swabby_y
     ld b,(hl)
     inc hl
     ld c,(hl)
-    ld a,SWABBY_MOVING
+    ld a,SWABBY_IDLE
     call add_sprite
     ; Other sprites go here...
     ;
