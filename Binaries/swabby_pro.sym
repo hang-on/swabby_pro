@@ -61,6 +61,8 @@
 0000:04e9 run_recorder
 0000:051d prepare_sandbox
 0000:054d run_sandbox
+0000:0572 skip_idle
+0000:058a skip_moving
 0002:8000 titlescreen_spritebank_table
 0002:8006 titlescreen_tilemap
 0002:8706 titlescreen_tiles

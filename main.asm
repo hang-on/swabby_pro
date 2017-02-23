@@ -236,28 +236,24 @@
     ; Handle the swabby state machine.
     ld a,(swabby_state)
     cp SWABBY_IDLE
-    jp nz,+
-      ; Swabby is idle - set the swabby sprite.
+    jp nz,skip_idle
       ld a,SWABBY_IDLE_SPRITE
       ld (swabby_sprite),a
-      ; Check for d-pad action and switch state accordingly.
       call is_dpad_pressed
-      jp nc,+
+      jp nc,skip_idle
         ld a,SWABBY_MOVING
         call change_swabby_state
-    +:
+    skip_idle:
     ld a,(swabby_state)
     cp SWABBY_MOVING
-    jp nz,+
-      ; Swabby is moving - set the swabby sprite.
+    jp nz,skip_moving
       ld a,SWABBY_MOVING_SPRITE
       ld (swabby_sprite),a
-      ; Check for d-pad action and switch state accordingly.
       call is_dpad_pressed
-      jp c,+
+      jp c,skip_moving
         ld a,SWABBY_IDLE
         call change_swabby_state
-    +:
+    skip_moving:
     ;
     call begin_sprites
     ; Put the swabby sprite in the buffer.
