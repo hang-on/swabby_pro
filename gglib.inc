@@ -367,6 +367,20 @@
 .ends
 
 ; -----------------------------------------------------------------------------
+.section "is_dpad_pressed" free
+; -----------------------------------------------------------------------------
+  is_dpad_pressed:
+    ld a,(InputPorts)
+    and %00001111   ; Isolate the dpad bits.
+    cpl             ; Invert bits; now 1 = keypress!
+    and %00001111   ; Get rid of garbage from cpl in last four bits.
+    cp 0            ; Now, is any dpad key preseed?
+    ret z           ; No, then return with carry flag reset (by the AND).
+    scf             ; Yes, then set carry flag and...
+  ret               ; Return with carry flag set.
+.ends
+
+; -----------------------------------------------------------------------------
 .section "IsPlayer1Button1Pressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer1Button1Pressed:

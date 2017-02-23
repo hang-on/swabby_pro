@@ -1,6 +1,7 @@
 .include "gglib.inc"
 .include "gglib_extended.inc"
 .include "spritelib.inc"
+.include "swabbylib.inc"
 ;
 ; Misc. definitions:
   .equ PICO8_PALETTE_SIZE 16
@@ -26,6 +27,8 @@
   .equ SWABBY_MOVING 1
   .equ SWABBY_X_INIT 48
   .equ SWABBY_Y_INIT 24
+  .equ SWABBY_IDLE_SPRITE 0
+  .equ SWABBY_MOVING_SPRITE 1
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +46,7 @@
 .ramsection "Sandbox variables" slot 3
   swabby_y db                     ; The order of these vars cannot change!
   swabby_x db
+  swabby_sprite db
   swabby_state db
   swabby_state_timer db
   swabby_direction db
@@ -207,6 +211,8 @@
     ld (swabby_y),a
     ld a,SWABBY_X_INIT
     ld (swabby_x),a
+    ld a,SWABBY_IDLE_SPRITE
+    ld (swabby_sprite),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -227,6 +233,31 @@
     call get_input_ports
     ld hl,swabby_state_timer
     inc (hl)
+    ; Handle the swabby state machine.
+    ld a,(swabby_state)
+    cp SWABBY_IDLE
+    jp nz,+
+      ; Swabby is idle - set the swabby sprite.
+      ld a,SWABBY_IDLE_SPRITE
+      ld (swabby_sprite),a
+      ; Check for d-pad action and switch state accordingly.
+      call is_dpad_pressed
+      jp nc,+
+        ld a,SWABBY_MOVING
+        call change_swabby_state
+    +:
+    ld a,(swabby_state)
+    cp SWABBY_MOVING
+    jp nz,+
+      ; Swabby is moving - set the swabby sprite.
+      ld a,SWABBY_MOVING_SPRITE
+      ld (swabby_sprite),a
+      ; Check for d-pad action and switch state accordingly.
+      call is_dpad_pressed
+      jp c,+
+        ld a,SWABBY_IDLE
+        call change_swabby_state
+    +:
     ;
     call begin_sprites
     ; Put the swabby sprite in the buffer.
