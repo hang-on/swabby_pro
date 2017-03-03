@@ -2,6 +2,7 @@
 .include "gglib_extended.inc"
 .include "spritelib.inc"
 .include "swabbylib.inc"
+.include "psglib.inc"
 ;
 ; Misc. definitions:
   .equ PICO8_PALETTE_SIZE 16
@@ -29,6 +30,8 @@
   .equ SWABBY_Y_INIT $40
   .equ SWABBY_IDLE_SPRITE 0
   .equ SWABBY_MOVING_SPRITE 1
+; Sound:
+  .equ SOUND_BANK 4
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,6 +66,8 @@
     ld b,PICO8_PALETTE_SIZE
     ld hl,pico8_palette
     call load_cram
+    ;
+    call PSGInit
     ;
     ld a,INITIAL_GAME_STATE
     ld (game_state),a
@@ -294,6 +299,7 @@
     call add_sprite
     ; Other sprites go here...
     ;
+    call PSGFrame
     jp main_loop
     ;
 .ends
@@ -332,4 +338,12 @@
   sandbox_tiles:
     .include "bank_3\spritesheet.png_tiles.inc"
   sandbox_tiles_end:
+.ends
+;
+.bank SOUND_BANK slot 2
+; -----------------------------------------------------------------------------
+.section "Sound assets" free
+; -----------------------------------------------------------------------------
+  shot_1:
+    .incbin "bank_4\shot_1.psg"
 .ends
