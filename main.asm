@@ -30,6 +30,9 @@
   .equ SWABBY_Y_INIT $40
   .equ SWABBY_IDLE_SPRITE 0
   .equ SWABBY_MOVING_SPRITE 1
+  .equ SWABBY_SPEED_INIT 1
+  .equ SWABBY_MAX_Y 152           ; How low can Swabby go?
+  .equ SWABBY_MIN_Y 22            ; ... and how high?
 ; Sound:
   .equ SOUND_BANK 4
 ;
@@ -53,6 +56,7 @@
   swabby_state db
   swabby_state_timer db
   swabby_direction db
+  swabby_speed db
 .ends
 ;
 .bank 0 slot 0
@@ -218,6 +222,8 @@
     ld (swabby_x),a
     ld a,SWABBY_IDLE_SPRITE
     ld (swabby_sprite),a
+    ld a,SWABBY_SPEED_INIT
+    ld (swabby_speed),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0_ZOOM
     ld b,1
@@ -269,16 +275,28 @@
         dec a
         ld (swabby_x),a
       +:
-      call IsPlayer1DownPressed
+      call IsPlayer1DownPressed   ; Move down?
       jp nc,+
-        ld a,(swabby_y)
-        inc a
-        ld (swabby_y),a
+        ld a,(swabby_speed)       ; Get Swabby's current spped.
+        ld b,a                    ; Save in B.
+        ld a,(swabby_y)           ; Get Swabby's current y-pos.
+        add a,b                   ; Add speed to y-pos.
+        cp SWABBY_MAX_Y           ; Will Swabby go through the floor?
+        jp c, skip_max_y          ; No?, then skip forward.
+          ld a,SWABBY_MAX_Y       ; Yes?, then set Swabby Y to max Y.
+        skip_max_y:
+        ld (swabby_y),a           ; Save this new y-pos in the variable.
       +:
-      call IsPlayer1UpPressed
+      call IsPlayer1UpPressed     ; Move up?
       jp nc,+
+        ld a,(swabby_speed)
+        ld b,a
         ld a,(swabby_y)
-        dec a
+        sub b
+        cp SWABBY_MIN_Y
+        jp nc,skip_min_y
+          ld a,SWABBY_MIN_Y
+        skip_min_y:
         ld (swabby_y),a
       +:
       call is_dpad_pressed
