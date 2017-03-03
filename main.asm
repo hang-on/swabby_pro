@@ -214,7 +214,7 @@
     ld a,SWABBY_IDLE_SPRITE
     ld (swabby_sprite),a
     ; Turn on screen and frame interrupts.
-    ld a,DISPLAY_1_FRAME_1_SIZE_0
+    ld a,DISPLAY_1_FRAME_1_SIZE_0_ZOOM
     ld b,1
     call set_register
     ei
