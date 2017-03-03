@@ -1,5 +1,5 @@
 echo off
-:: import_pico_sheet.bat
+:: process_pico_sheet.bat
 :: This tool is used to grab an exported spritesheet from pico-8 and convert
 :: it to tiles for GG programming. Adjust the folder and/or filename below as
 :: appropriate.
