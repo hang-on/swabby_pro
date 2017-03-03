@@ -33,6 +33,9 @@
   .equ SWABBY_SPEED_INIT 1
   .equ SWABBY_MAX_Y 152           ; How low can Swabby go?
   .equ SWABBY_MIN_Y 22            ; ... and how high?
+  .equ SWABBY_MIN_X 6*8
+  .equ SWABBY_MAX_X (6*8)+(18*8)
+  .equ SWABBY_MIN_X 6*8
 ; Sound:
   .equ SOUND_BANK 4
 ;
@@ -263,16 +266,28 @@
       ; Handle Swabby moving state.
       ld a,SWABBY_MOVING_SPRITE
       ld (swabby_sprite),a
-      call IsPlayer1RightPressed
+      call IsPlayer1RightPressed  ; Move right?
       jp nc,+
+        ld a,(swabby_speed)
+        ld b,a
         ld a,(swabby_x)
-        inc a
+        add a,b
+        cp SWABBY_MAX_X
+        jp c,skip_max_x
+          ld a,SWABBY_MAX_X
+        skip_max_x:
         ld (swabby_x),a
       +:
-      call IsPlayer1LeftPressed
+      call IsPlayer1LeftPressed   ; Move left?
       jp nc,+
+        ld a,(swabby_speed)
+        ld b,a
         ld a,(swabby_x)
-        dec a
+        sub b
+        cp SWABBY_MIN_X
+        jp nc,skip_min_x
+          ld a,SWABBY_MIN_X
+        skip_min_x:
         ld (swabby_x),a
       +:
       call IsPlayer1DownPressed   ; Move down?
