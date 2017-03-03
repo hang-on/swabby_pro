@@ -60,6 +60,8 @@
   swabby_state_timer db
   swabby_direction db
   swabby_speed db
+  swabby_fire_timer db
+  swabby_fire_ready db
 .ends
 ;
 .bank 0 slot 0
@@ -227,6 +229,10 @@
     ld (swabby_sprite),a
     ld a,SWABBY_SPEED_INIT
     ld (swabby_speed),a
+    ld a,TRUE
+    ld (swabby_fire_ready),a
+    xor a
+    ld (swabby_fire_timer),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0_ZOOM
     ld b,1
@@ -320,6 +326,17 @@
         ld a,SWABBY_IDLE
         call change_swabby_state
     skip_moving:
+    ;
+    ; Swabby's fire.
+      ld hl,swabby_fire_timer
+      inc (hl)
+      ; Prevent auto fire.
+      call is_button_1_pressed
+      jp nc,+
+        ld a,TRUE
+        ld (swabby_fire_ready),a ;FIXME: Bad name!!
+      +:
+    end_of_swabby_fire:
     ;
     call begin_sprites
     ; Put the swabby sprite in the buffer.

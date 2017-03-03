@@ -383,9 +383,9 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1Button1Pressed" free
+.section "is_button_1_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1Button1Pressed:
+  is_button_1_pressed:
     ld a,(InputPorts)
     and %00010000
     ret nz            ; Return with carry flag reset
@@ -394,9 +394,9 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1Button2Pressed" free
+.section "is_button_2_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1Button2Pressed:
+  is_button_2_pressed:
     ld a,(InputPorts)
     and %00100000
     ret nz          ; Return with carry flag reset
