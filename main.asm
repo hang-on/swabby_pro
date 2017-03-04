@@ -61,7 +61,7 @@
   swabby_direction db
   swabby_speed db
   swabby_fire_timer db
-  swabby_fire_ready db
+  swabby_fire_lock db
 .ends
 ;
 .bank 0 slot 0
@@ -229,8 +229,8 @@
     ld (swabby_sprite),a
     ld a,SWABBY_SPEED_INIT
     ld (swabby_speed),a
-    ld a,TRUE
-    ld (swabby_fire_ready),a
+    ld a,FALSE
+    ld (swabby_fire_lock),a
     xor a
     ld (swabby_fire_timer),a
     ; Turn on screen and frame interrupts.
@@ -332,10 +332,24 @@
       inc (hl)
       ; Prevent auto fire.
       call is_button_1_pressed
-      jp nc,+
-        ld a,TRUE
-        ld (swabby_fire_ready),a ;FIXME: Bad name!!
+      jp c,+
+        ld a,FALSE
+        ld (swabby_fire_lock),a
       +:
+      ; Fire new bullet if conditions are right.
+      ld a,(swabby_fire_lock)       ; 1st check - is fire lock off?
+      cp FALSE
+      jp nz,skip_new_bullet         ; If not, skip bullet creation.
+        call is_button_1_pressed    ; 2nd check - is fire button pressed?
+        jp nc,skip_new_bullet       ; If not, skip bullet creation.
+          ;
+          ; OK - everything is good. Fire new bullet.
+          ld a,TRUE
+          ld (swabby_fire_lock),a   ; Set fire lock (reset on button release).
+          SELECT_BANK SOUND_BANK    ; Select the sound assets bank.
+          ld hl,shot_1
+          call PSGSFXPlay           ; Play the swabby shot sound effect.
+      skip_new_bullet:
     end_of_swabby_fire:
     ;
     call begin_sprites
@@ -349,7 +363,9 @@
     call add_sprite
     ; Other sprites go here...
     ;
+    SELECT_BANK SOUND_BANK
     call PSGFrame
+    call PSGSFXFrame
     jp main_loop
     ;
 .ends
