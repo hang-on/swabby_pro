@@ -22,7 +22,7 @@
   .equ BLINKER_HEIGHT 1           ; is 18 tiles wide (and a single tile high).
   .equ BLINKER_ADDRESS $3b8e      ; Address of first name table element.
   .equ BLINKER_DURATION 100       ; Number of frames between on/off.
-; Sandbox:
+; Swabby:
   .equ SANDBOX_BANK 3             ; Pico-8 sandbox assets are in bank 3.
   .equ SWABBY_IDLE 0
   .equ SWABBY_MOVING 1
@@ -38,6 +38,8 @@
   .equ SWABBY_MIN_X 6*8
 ; Sound:
   .equ SOUND_BANK 4
+; Bullets:
+  .equ BULLET_MAX 6
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,6 +64,10 @@
   swabby_speed db
   swabby_fire_timer db
   swabby_fire_lock db
+  ;
+  bullet_y_table dsb BULLET_MAX   ; Keep table vars in order!
+  bullet_x_table dsb BULLET_MAX
+  next_bullet db
 .ends
 ;
 .bank 0 slot 0
@@ -231,8 +237,15 @@
     ld (swabby_speed),a
     ld a,FALSE
     ld (swabby_fire_lock),a
+    ; -- Variables initialized to zero.
     xor a
     ld (swabby_fire_timer),a
+    ld b,(BULLET_MAX+1)*2
+    ld hl,bullet_y_table
+    -:
+      ld (hl),a
+      inc hl
+    djnz -
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0_ZOOM
     ld b,1
