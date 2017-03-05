@@ -40,9 +40,9 @@
   .equ SOUND_BANK 4
 ; Bullets:
   .equ BULLET_MAX 10              ; Maximum number of bullets. Will wrap!
-  .equ BULLET_SPEED 2
+  .equ BULLET_SPEED 3
   .equ BULLET_TILE 2
-  .equ FIRE_DELAY_INIT 30
+  .equ FIRE_DELAY_INIT 14
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
