@@ -399,9 +399,10 @@
       -:
         ld a,(hl)
         add a,BULLET_SPEED
-        jp po,+                       ; See if the bullet will now wrap.
-          ld a,248                    ; Keep bullets at the right edge of the
-        +:                            ; screen (out of sight).
+        cp LCD_RIGHT_BORDER
+        jp c,+                        ;
+          ld a,LCD_RIGHT_BORDER+8     ; Keep bullets out of sight.
+        +:                            ;
         ld (hl),a
         inc hl
       djnz -
@@ -419,11 +420,15 @@
     call add_sprite
     ; Put relevant bullets on screen.
     ; ----
-    ld ix,bullet_y_table
-    ld b,(ix+0)
-    ld c,(ix+BULLET_MAX)
-    ld a,BULLET_TILE
-    call add_sprite
+    ld ix,bullet_y_table  ; FIXME! Process all bullets in table!
+    ld a,(ix+BULLET_MAX)
+    cp LCD_RIGHT_BORDER
+    jp nc,+
+      ld b,(ix+0)
+      ld c,a
+      ld a,BULLET_TILE
+      call add_sprite
+    +:
     ;
     SELECT_BANK SOUND_BANK
     call PSGFrame

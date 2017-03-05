@@ -31,17 +31,16 @@
   ; Exit:
   ; Uses: N.A.
   add_sprite:
-
+    ; Test for sprite overflow (more than 64 hardware sprites at once).
+    ld d,a                    ; Save the tile in unused register.
+    ld a,(NextFreeSprite)
+    inc a
+    cp 65
+    ret nc
+    ld a,d                    ; Restore tile in A.
+    ;
     push af
     push bc
-
-    ; - FIXME: Beware of push/pop/calls!
-    ; Test for sprite overflow (more than 64 hardware sprites at once).
-    ; ld a,(NextFreeSprite)
-    ; inc a
-    ; cp 65
-    ; ret nc
-
     ; Point DE to SpriteBufferY[NextFreeSprite].
     ld a,(NextFreeSprite)
     ld de,SpriteBufferY
