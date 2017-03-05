@@ -340,7 +340,7 @@
     ld a,(hl)
     inc a
     ld (hl),a
-    jp po,+
+    jp nz,+
       inc hl
       inc (hl)
     +:

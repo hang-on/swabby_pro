@@ -424,6 +424,7 @@
       +:
     end_of_swabby_fire:
     ;
+    ;
     call begin_sprites                ; No sprites before this line!
     ; Put the swabby sprite in the buffer.
     ld hl,swabby_y
