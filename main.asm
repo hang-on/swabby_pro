@@ -38,8 +38,8 @@
 ; Sound:
   .equ SOUND_BANK 4
 ; Bullets:
-  .equ BULLET_MAX 6               ; Maximum number of bullets. Will wrap!
-  .equ BULLET_SPEED 4
+  .equ BULLET_MAX 10              ; Maximum number of bullets. Will wrap!
+  .equ BULLET_SPEED 2
   .equ BULLET_TILE 2
 ;
 ;
@@ -387,10 +387,10 @@
           ld a,(next_bullet)        ; Increment or reset bullet table index.
           inc a
           cp BULLET_MAX-1
-          jp nc,+
+          jp nz,+
             xor a
           +:
-          ld a,(next_bullet)
+          ld (next_bullet),a
           ;
       skip_new_bullet:
       ; Move all bullets.
@@ -406,7 +406,6 @@
         ld (hl),a
         inc hl
       djnz -
-
     end_of_swabby_fire:
     ;
     call begin_sprites                ; No sprites before this line!
@@ -420,15 +419,21 @@
     call add_sprite
     ; Put relevant bullets on screen.
     ; ----
-    ld ix,bullet_y_table  ; FIXME! Process all bullets in table!
-    ld a,(ix+BULLET_MAX)
-    cp LCD_RIGHT_BORDER
-    jp nc,+
-      ld b,(ix+0)
-      ld c,a
-      ld a,BULLET_TILE
-      call add_sprite
-    +:
+    ld ix,bullet_y_table
+    ld b,BULLET_MAX
+    -:
+      ld a,(ix+BULLET_MAX)
+      cp LCD_RIGHT_BORDER
+      jp nc,+
+        push bc
+          ld b,(ix+0)
+          ld c,a
+          ld a,BULLET_TILE
+          call add_sprite
+        pop bc
+      +:
+      inc ix
+    djnz -
     ;
     SELECT_BANK SOUND_BANK
     call PSGFrame
