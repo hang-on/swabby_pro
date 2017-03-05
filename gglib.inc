@@ -61,6 +61,12 @@
 .equ PAUSE_FLAG_RESET $00
 .equ PAUSE_FLAG_SET $ff
 
+.equ LCD_RIGHT_BORDER (6*8)+(20*8)
+.equ LCD_LEFT_BORDER 6*8
+.equ LCD_TOP_BORDER 3*8
+.equ LCD_BOTTOM_BORDER (3*8)+(18*8)
+.equ LCD_WIDTH 20*8
+.equ LCD_HEIGHT 18*8
 ; -----------------------------------------------------------------------------
 ; SOFTWARE DEFINITIONS
 ; -----------------------------------------------------------------------------

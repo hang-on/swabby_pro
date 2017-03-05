@@ -35,11 +35,12 @@
   .equ SWABBY_MIN_Y 22            ; ... and how high?
   .equ SWABBY_MIN_X 6*8
   .equ SWABBY_MAX_X (6*8)+(18*8)
-  .equ SWABBY_MIN_X 6*8
 ; Sound:
   .equ SOUND_BANK 4
 ; Bullets:
-  .equ BULLET_MAX 6
+  .equ BULLET_MAX 6               ; Maximum number of bullets. Will wrap!
+  .equ BULLET_SPEED 4
+  .equ BULLET_TILE 2
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -240,7 +241,8 @@
     ; -- Variables initialized to zero.
     xor a
     ld (swabby_fire_timer),a
-    ld b,(BULLET_MAX+1)*2
+    ld (next_bullet),a
+    ld b,(BULLET_MAX+1)*2                   ; Clear the bullet y,x tables.
     ld hl,bullet_y_table
     -:
       ld (hl),a
@@ -355,17 +357,58 @@
       jp nz,skip_new_bullet         ; If not, skip bullet creation.
         call is_button_1_pressed    ; 2nd check - is fire button pressed?
         jp nc,skip_new_bullet       ; If not, skip bullet creation.
-          ;
+          ; FIXME: Needs a 3rd check - fire_delay vs. fire_timer.
           ; OK - everything is good. Fire new bullet.
+          ld hl,bullet_y_table
+          ld a,(next_bullet)
+          ld d,0
+          ld e,a
+          add hl,de
+          ld a,(swabby_y)
+          inc a
+          inc a
+          ld (hl),a                 ; Write bullet's initial y-pos to table.
+          ld e,BULLET_MAX
+          add hl,de                 ; Forward to x-pos table.
+          ld a,(swabby_x)
+          ld b,8
+          add a,b
+          ld (hl),a                 ; Write bullet's initial x-pos to table.
+          ;
+          xor a
+          ld (swabby_fire_timer),a  ; Reset fire timer.
           ld a,TRUE
           ld (swabby_fire_lock),a   ; Set fire lock (reset on button release).
+          ;
           SELECT_BANK SOUND_BANK    ; Select the sound assets bank.
           ld hl,shot_1
           call PSGSFXPlay           ; Play the swabby shot sound effect.
+          ;
+          ld a,(next_bullet)        ; Increment or reset bullet table index.
+          inc a
+          cp BULLET_MAX-1
+          jp nc,+
+            xor a
+          +:
+          ld a,(next_bullet)
+          ;
       skip_new_bullet:
+      ; Move all bullets.
+      ld b,BULLET_MAX
+      ld hl,bullet_x_table
+      -:
+        ld a,(hl)
+        add a,BULLET_SPEED
+        jp po,+                       ; See if the bullet will now wrap.
+          ld a,248                    ; Keep bullets at the right edge of the
+        +:                            ; screen (out of sight).
+        ld (hl),a
+        inc hl
+      djnz -
+
     end_of_swabby_fire:
     ;
-    call begin_sprites
+    call begin_sprites                ; No sprites before this line!
     ; Put the swabby sprite in the buffer.
     ld hl,swabby_y
     ld b,(hl)
@@ -374,7 +417,13 @@
     inc hl
     ld a,(hl)
     call add_sprite
-    ; Other sprites go here...
+    ; Put relevant bullets on screen.
+    ; ----
+    ld ix,bullet_y_table
+    ld b,(ix+0)
+    ld c,(ix+BULLET_MAX)
+    ld a,BULLET_TILE
+    call add_sprite
     ;
     SELECT_BANK SOUND_BANK
     call PSGFrame

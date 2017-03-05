@@ -35,11 +35,12 @@
     push af
     push bc
 
+    ; - FIXME: Beware of push/pop/calls!
     ; Test for sprite overflow (more than 64 hardware sprites at once).
-    ld a,(NextFreeSprite)
-    inc a
-    cp 65
-    ret nc
+    ; ld a,(NextFreeSprite)
+    ; inc a
+    ; cp 65
+    ; ret nc
 
     ; Point DE to SpriteBufferY[NextFreeSprite].
     ld a,(NextFreeSprite)
@@ -57,6 +58,7 @@
 
     ; Point DE to SpriteBufferXC[NextFreeSprite].
     ld a,(NextFreeSprite)
+    add a,a               ; Table elements are words!
     ld de,SpriteBufferXC
     add a,e
     ld e,a
