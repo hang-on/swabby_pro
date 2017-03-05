@@ -26,6 +26,7 @@
   .equ SANDBOX_BANK 3             ; Pico-8 sandbox assets are in bank 3.
   .equ SWABBY_IDLE 0
   .equ SWABBY_MOVING 1
+  .equ SWABBY_SHOOTING 16
   .equ SWABBY_X_INIT 48
   .equ SWABBY_Y_INIT $40
   .equ SWABBY_IDLE_SPRITE 0
@@ -41,6 +42,7 @@
   .equ BULLET_MAX 10              ; Maximum number of bullets. Will wrap!
   .equ BULLET_SPEED 2
   .equ BULLET_TILE 2
+  .equ FIRE_DELAY_INIT 30
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,6 +67,7 @@
   swabby_speed db
   swabby_fire_timer db
   swabby_fire_lock db
+  swabby_fire_delay db
   ;
   bullet_y_table dsb BULLET_MAX   ; Keep table vars in order!
   bullet_x_table dsb BULLET_MAX
@@ -238,9 +241,12 @@
     ld (swabby_speed),a
     ld a,FALSE
     ld (swabby_fire_lock),a
+    ld a,FIRE_DELAY_INIT
+    ld (swabby_fire_delay),a
+    ld a,100
+    ld (swabby_fire_timer),a                ; To avoid initial shooting anim.
     ; -- Variables initialized to zero.
     xor a
-    ld (swabby_fire_timer),a
     ld (next_bullet),a
     ld b,(BULLET_MAX+1)*2                   ; Clear the bullet y,x tables.
     ld hl,bullet_y_table
@@ -357,41 +363,44 @@
       jp nz,skip_new_bullet         ; If not, skip bullet creation.
         call is_button_1_pressed    ; 2nd check - is fire button pressed?
         jp nc,skip_new_bullet       ; If not, skip bullet creation.
-          ; FIXME: Needs a 3rd check - fire_delay vs. fire_timer.
-          ; OK - everything is good. Fire new bullet.
-          ld hl,bullet_y_table
-          ld a,(next_bullet)
-          ld d,0
-          ld e,a
-          add hl,de
-          ld a,(swabby_y)
-          inc a
-          inc a
-          ld (hl),a                 ; Write bullet's initial y-pos to table.
-          ld e,BULLET_MAX
-          add hl,de                 ; Forward to x-pos table.
-          ld a,(swabby_x)
-          ld b,8
-          add a,b
-          ld (hl),a                 ; Write bullet's initial x-pos to table.
-          ;
-          xor a
-          ld (swabby_fire_timer),a  ; Reset fire timer.
-          ld a,TRUE
-          ld (swabby_fire_lock),a   ; Set fire lock (reset on button release).
-          ;
-          SELECT_BANK SOUND_BANK    ; Select the sound assets bank.
-          ld hl,shot_1
-          call PSGSFXPlay           ; Play the swabby shot sound effect.
-          ;
-          ld a,(next_bullet)        ; Increment or reset bullet table index.
-          inc a
-          cp BULLET_MAX-1
-          jp nz,+
+          ld a,(swabby_fire_delay)  ; 3rd check - is timer past delay?
+          ld hl,swabby_fire_timer
+          cp (hl)
+          jp nc,skip_new_bullet
+            ; OK - everything is good. Fire new bullet.
+            ld hl,bullet_y_table
+            ld a,(next_bullet)
+            ld d,0
+            ld e,a
+            add hl,de
+            ld a,(swabby_y)
+            inc a
+            inc a
+            ld (hl),a                 ; Write bullet's initial y-pos to table.
+            ld e,BULLET_MAX
+            add hl,de                 ; Forward to x-pos table.
+            ld a,(swabby_x)
+            ld b,8
+            add a,b
+            ld (hl),a                 ; Write bullet's initial x-pos to table.
+            ;
             xor a
-          +:
-          ld (next_bullet),a
-          ;
+            ld (swabby_fire_timer),a  ; Reset fire timer.
+            ld a,TRUE
+            ld (swabby_fire_lock),a   ; Set fire lock (reset on button release).
+            ;
+            SELECT_BANK SOUND_BANK    ; Select the sound assets bank.
+            ld hl,shot_1
+            call PSGSFXPlay           ; Play the swabby shot sound effect.
+            ;
+            ld a,(next_bullet)        ; Increment or reset bullet table index.
+            inc a
+            cp BULLET_MAX-1
+            jp nz,+
+              xor a
+            +:
+            ld (next_bullet),a
+            ;
       skip_new_bullet:
       ; Move all bullets.
       ld b,BULLET_MAX
@@ -406,6 +415,13 @@
         ld (hl),a
         inc hl
       djnz -
+      ; Set Swabby sprite to shooting!
+      ld a,(swabby_fire_timer)
+      cp 8
+      jp nc,+
+        ld a,SWABBY_SHOOTING
+        ld (swabby_sprite),a
+      +:
     end_of_swabby_fire:
     ;
     call begin_sprites                ; No sprites before this line!
