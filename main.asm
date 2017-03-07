@@ -43,6 +43,9 @@
   .equ BULLET_SPEED 3
   .equ BULLET_TILE 2
   .equ FIRE_DELAY_INIT 14
+; Demons:
+  .equ DEMON_ACTIVE_UNITS_MAX 10
+  .equ DEMON_ACTIVE_UNITS_INIT 1
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,6 +75,7 @@
   bullet_y_table dsb BULLET_MAX   ; Keep table vars in order!
   bullet_x_table dsb BULLET_MAX
   next_bullet db
+  ;
 .ends
 ;
 .bank 0 slot 0
@@ -426,7 +430,8 @@
     ;
     ;
     call begin_sprites                ; No sprites before this line!
-    ; Put the swabby sprite in the buffer.
+    ; Put the swabby sprite in the buffer. FIXME: Move Swabby into the middle
+    ; of the SAT to avoid Swabby-flicker (if it becomes a problem).
     ld hl,swabby_y
     ld b,(hl)
     inc hl
@@ -501,4 +506,6 @@
 ; -----------------------------------------------------------------------------
   shot_1:
     .incbin "bank_4\shot_1.psg"
+  demon_attack:
+    .incbin "bank_4\demon_attack.psg"
 .ends
