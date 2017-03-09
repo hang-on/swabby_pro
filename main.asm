@@ -82,8 +82,8 @@
   bullet_x_table dsb BULLET_MAX
   next_bullet db
   ;
-  demon_active_units db
-  demon_active_units_timer dw
+  active_demons db
+  active_demons_timer dw
   demon_timer_table dsb MAX_ACTIVE_DEMONS
   demon_state_table dsb MAX_ACTIVE_DEMONS
   demon_sprite_table dsb MAX_ACTIVE_DEMONS
@@ -288,6 +288,12 @@
       ld (hl),a
       inc hl
     djnz -
+    ld a,1
+    ld (active_demons),a
+    xor a
+    ld (active_demons_timer),a
+    ld (active_demons_timer+1),a           ; It is a word.
+    ; ---
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0_ZOOM
@@ -458,7 +464,15 @@
         ld (swabby_sprite),a
       +:
     end_of_swabby_fire:
-    ;
+    ; Update demons.
+    ld hl,active_demons_timer
+    call inc_word
+    ld bc,$0256
+    call cp_word
+    jp nz,+
+      debug:
+      nop
+    +:
     ;
     call begin_sprites                ; No sprites before this line!
     ; Put the swabby sprite in the buffer. FIXME: Move Swabby into the middle

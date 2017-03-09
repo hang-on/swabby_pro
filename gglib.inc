@@ -299,6 +299,23 @@
 .ends
 
 ; -----------------------------------------------------------------------------
+.section "cp_word" free
+; -----------------------------------------------------------------------------
+  cp_word:
+    ; Compare a word-sized variable at HL to a word-sized value in DE.
+    ; Entry: HL = Pointer to variable.
+    ;        BC = Value to compare.
+    ; Exit: Zero flag is set/reset.
+    ;
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+    sbc hl,bc
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
 .section "get_input_ports" free
 ; -----------------------------------------------------------------------------
   ; Set InputPorts (word) to mirror current state of ports $dc and $dd.
@@ -337,6 +354,7 @@
     ; Exit: None
     ; Preserves all registers.
     push af
+    push hl
     ld a,(hl)
     inc a
     ld (hl),a
@@ -344,6 +362,7 @@
       inc hl
       inc (hl)
     +:
+    pop hl
     pop af
   ret
 .ends
