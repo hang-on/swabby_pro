@@ -290,9 +290,8 @@
     djnz -
     ld a,1
     ld (active_demons),a
-    xor a
-    ld (active_demons_timer),a
-    ld (active_demons_timer+1),a           ; It is a word.
+    ld hl,0
+    ld (active_demons_timer),hl           ; It is a word.
     ; ---
     ;
     ; Turn on screen and frame interrupts.
@@ -467,12 +466,42 @@
     ; Update demons.
     ld hl,active_demons_timer
     call inc_word
-    ld bc,$0256
+    ld bc,400
     call cp_word
-    jp nz,+
-      debug:
-      nop
-    +:
+    jp nz,skip_activate_demon
+      ld a,(active_demons)
+      cp MAX_ACTIVE_DEMONS
+      jp z,skip_activate_demon
+        ; OK, time to activate another demon, and reset timer.
+        inc a
+        ld (active_demons),a
+        ld hl,0
+        ld (active_demons_timer),hl
+    skip_activate_demon:
+    ; Process all demons below...
+    ld b,MAX_ACTIVE_DEMONS
+    ld hl,demon_state_table
+    demon_state_loop:
+      ld a,(hl)
+      push hl
+      push bc
+      cp DEMON_FLYING_STATE
+      jp nz,skip_flying_state
+        ;
+        
+      skip_flying_state:
+      cp DEMON_ATTACKING_STATE
+      jp nz,skip_attacking_state
+        ;
+      skip_attacking_state:
+      cp DEMON_SLEEPING_STATE
+      jp nz,skip_sleeping_state
+        ;
+      skip_sleeping_state
+      pop bc
+      pop hl
+    djnz demon_state_loop
+    demon_state_loop_end:
     ;
     call begin_sprites                ; No sprites before this line!
     ; Put the swabby sprite in the buffer. FIXME: Move Swabby into the middle
