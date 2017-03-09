@@ -44,11 +44,14 @@
   .equ BULLET_TILE 2
   .equ FIRE_DELAY_INIT 14
 ; Demons:
-  .equ DEMON_ACTIVE_UNITS_MAX 10
+  .equ MAX_ACTIVE_DEMONS 5        ; Must be 5!
   .equ DEMON_ACTIVE_UNITS_INIT 1
-  .equ DEMON_FLYING_1 32
+  .equ DEMON_FLYING_1 32          ; Demon tiles.
   .equ DEMON_FLYING_2 34
   .equ DEMON_ATTACKING 33
+  .equ DEMON_SLEEPING_STATE 2     ; Demon states.
+  .equ DEMON_ATTACKING_STATE 1
+  .equ DEMON_FLYING_STATE 0
 ;
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,11 +84,11 @@
   ;
   demon_active_units db
   demon_active_units_timer dw
-  demon_y_table dsb DEMON_ACTIVE_UNITS_MAX
-  demon_x_table dsb DEMON_ACTIVE_UNITS_MAX
-  demon_timer_table dsb DEMON_ACTIVE_UNITS_MAX
-  demon_state_table dsb DEMON_ACTIVE_UNITS_MAX
-  demon_sprite_table dsb DEMON_ACTIVE_UNITS_MAX
+  demon_timer_table dsb MAX_ACTIVE_DEMONS
+  demon_state_table dsb MAX_ACTIVE_DEMONS
+  demon_sprite_table dsb MAX_ACTIVE_DEMONS
+  demon_y_table dsb MAX_ACTIVE_DEMONS
+  demon_x_table dsb MAX_ACTIVE_DEMONS
 .ends
 ;
 .bank 0 slot 0
@@ -269,12 +272,22 @@
       inc hl
     djnz -
     ; Initialize the demons.
-    ld de,demon_state_table
-    ld hl,demon_init_table
-    ld bc,DEMON_ACTIVE_UNITS_MAX
-    ldir
-    ld a,1
-    ld (demon_active_units),a
+    ; Reset all demon timers
+    ld hl,demon_timer_table
+    ld b,MAX_ACTIVE_DEMONS
+    xor a
+    -:
+      ld (hl),a
+      inc hl
+    djnz -
+    ; Set all demon states to 2 = INACTIVE
+    ld hl,demon_state_table
+    ld b,MAX_ACTIVE_DEMONS
+    ld a,DEMON_SLEEPING_STATE
+    -:
+      ld (hl),a
+      inc hl
+    djnz -
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0_ZOOM
@@ -285,10 +298,6 @@
     ld a,GS_RUN_SANDBOX
     ld (game_state),a
   jp main_loop
-  demon_init_table:
-  .rept DEMON_ACTIVE_UNITS_MAX
-    .db 2
-  .endr
   ; ---------------------------------------------------------------------------
   run_sandbox:
     ; Run sandbox mode...
@@ -478,19 +487,6 @@
       +:
       inc ix
     djnz -
-    ; Put demons on screen.
-    ld ix,demon_y_table
-    ld b,DEMON_ACTIVE_UNITS_MAX
-    -:
-      push bc
-        ld a,(ix+(DEMON_ACTIVE_UNITS_MAX*4))
-        ld b,(ix+0)
-        ld c,(ix+DEMON_ACTIVE_UNITS_MAX)
-        call add_sprite
-        inc ix
-      pop bc
-    djnz -
-    ;
     SELECT_BANK SOUND_BANK
     call PSGFrame
     call PSGSFXFrame
