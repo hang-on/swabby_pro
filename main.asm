@@ -481,14 +481,29 @@
     ; Process all demons below...
     ld b,MAX_ACTIVE_DEMONS
     ld hl,demon_state_table
-    demon_state_loop:
+
+    demon_state_loop:               ; in this loop, assume B = index.
       ld a,(hl)
       push hl
       push bc
       cp DEMON_FLYING_STATE
       jp nz,skip_flying_state
         ;
-        
+        ld hl,demon_timer_table
+        ld a,b
+        call inc_array_element
+        call get_array_element
+        cp 10
+        jp nz,+
+          ; Time to move down.
+          ld b,0
+          call set_array_element    ; Reset timer to zero.
+          ld hl,demon_y_table
+          call inc_array_element
+          ; TODO: insert sprite anim. here....
+        +:
+        ; Move left.
+        ; DX[i]=-1
       skip_flying_state:
       cp DEMON_ATTACKING_STATE
       jp nz,skip_attacking_state
@@ -497,7 +512,7 @@
       cp DEMON_SLEEPING_STATE
       jp nz,skip_sleeping_state
         ;
-      skip_sleeping_state
+      skip_sleeping_state:
       pop bc
       pop hl
     djnz demon_state_loop
