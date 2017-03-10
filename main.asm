@@ -537,7 +537,10 @@
           ; Demon X matches Swabby X > attack!
           SELECT_BANK SOUND_BANK
           ld hl,demon_attack
+          push bc
+          ld c,SFX_CHANNELS2AND3
           call PSGSFXPlay
+          pop bc
           ld b,DEMON_ATTACKING_STATE
           ld a,c
           ld hl,demon_state_table
