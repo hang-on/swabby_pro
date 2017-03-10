@@ -487,12 +487,12 @@
       ld hl,demon_state_table
       ld a,b
       call get_table_item
+      ld c,b  ; save index
       push hl
       push bc
       ; ---
       cp DEMON_FLYING_STATE
       jp nz,skip_flying_state
-        ld c,b ; Save index in C.
         ld hl,demon_timer_table
         ld a,b
         call inc_table_item
@@ -505,7 +505,7 @@
           call set_table_item    ; Reset timer to zero.
           ld hl,demon_y_table
           call inc_table_item
-          ; TODO: insert sprite anim. here....
+          ; Animate demon every time it moves vertically.
           ld hl,demon_sprite_table
           call get_table_item
           cp DEMON_FLYING_1
@@ -527,6 +527,24 @@
         ld hl,demon_x_table ; A (index should still be alright here...?)
         call dec_table_item
         ; TODO: Insert attack state switch (compare demon and player x) here..
+        ld a,c  ; get table index.
+        ld hl,demon_x_table ; A (index should still be alright here...?)
+        call get_table_item
+        ld b,a
+        ld a,(swabby_x)
+        cp b
+        jp nz,+
+          ; Demon X matches Swabby X > attack!
+          SELECT_BANK SOUND_BANK
+          ld hl,demon_attack
+          call PSGSFXPlay
+          ld b,DEMON_ATTACKING_STATE
+          ld a,c
+          ld hl,demon_state_table
+          call set_table_item
+        +:
+        ;
+        ld a,c
         ld hl,demon_x_table ; Assume A is still index
         call get_table_item
         cp LCD_LEFT_BORDER-16 ; Is the demon outside the LCD (left side)?
@@ -536,11 +554,32 @@
           ld hl,demon_state_table
           call set_table_item
         +:
+        jp skip_state_tests
       skip_flying_state:
       ; ----
       cp DEMON_ATTACKING_STATE
       jp nz,skip_attacking_state
-        ;
+        ; - handle demons attacking
+        ld a,c
+        ld hl,demon_y_table
+        call get_table_item
+        add a,3
+        cp LCD_BOTTOM_BORDER+16
+        jp c,+
+          ld b,DEMON_SLEEPING_STATE
+          ld a,c
+          ld hl,demon_state_table
+          call set_table_item
+          jp skip_state_tests
+        +:
+        ld b,a
+        ld a,c
+        ld hl,demon_y_table
+        call set_table_item ; write new y to demon table.
+        ld b,DEMON_ATTACKING
+        ld hl,demon_sprite_table
+        call set_table_item
+        jp skip_state_tests
       skip_attacking_state:
       ; ----
       cp DEMON_SLEEPING_STATE
@@ -576,6 +615,7 @@
           ld hl,demon_sprite_table
           call set_table_item
       skip_sleeping_state:
+      skip_state_tests:
       pop bc
       pop hl
       inc b
