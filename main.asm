@@ -280,7 +280,7 @@
       ld (hl),a
       inc hl
     djnz -
-    ; Set all demon states to 2 = INACTIVE
+    ; Set all demon states to 2 = SLEEPING
     ld hl,demon_state_table
     ld b,MAX_ACTIVE_DEMONS
     ld a,DEMON_SLEEPING_STATE
@@ -319,6 +319,9 @@
     cp SWABBY_IDLE
     jp nz,skip_idle
       ; Handle Swabby idle state.
+      ; When Swabby is idle, increment the random number seed.
+      ld hl,rnd_generator_word
+      call inc_word
       ld a,SWABBY_IDLE_SPRITE
       ld (swabby_sprite),a
       call is_dpad_pressed
@@ -479,16 +482,17 @@
         ld (active_demons_timer),hl
     skip_activate_demon:
     ; Process all demons below...
-    ld b,MAX_ACTIVE_DEMONS
-    ld hl,demon_state_table
-
-    demon_state_loop:               ; in this loop, assume B = index.
-      ld a,(hl)
+    ld b,0
+    demon_state_loop:               ; in this loop, assume B or C = index.
+      ld hl,demon_state_table
+      ld a,b
+      call get_table_item
       push hl
       push bc
+      ; ---
       cp DEMON_FLYING_STATE
       jp nz,skip_flying_state
-        ;
+        ld c,b ; Save index in C.
         ld hl,demon_timer_table
         ld a,b
         call inc_table_item
@@ -496,30 +500,74 @@
         cp 10
         jp nz,+
           ; Time to move down.
-          push bc ; Save array index
-            ld b,0
-            call set_table_item    ; Reset timer to zero.
-            ld hl,demon_y_table
-            call inc_table_item
-            ; TODO: insert sprite anim. here....
-          pop bc ; restore array index.
+          ld a,c ; get index
+          ld b,0
+          call set_table_item    ; Reset timer to zero.
+          ld hl,demon_y_table
+          call inc_table_item
+          ; TODO: insert sprite anim. here....
         +:
         ; Move left.
         ; DX[i]=-1
-        ld hl,demon_x_table
+        ld a,c  ; get table index.
+        ld hl,demon_x_table ; A (index should still be alright here...?)
         call dec_table_item
+        ; TODO: Insert attack state switch (compare demon and player x) here..
+        ld hl,demon_x_table ; Assume A is still index
+        call get_table_item
+        cp LCD_TOP_BORDER-8 ; Is the demon outside the LCD (left side)?
+        jp nz,+
+          ld a,c ; get index.
+          ld b,DEMON_SLEEPING_STATE ; if demon is outside, put it to sleep.
+          ld hl,demon_state_table
+          call set_table_item
+        +:
       skip_flying_state:
+      ; ----
       cp DEMON_ATTACKING_STATE
       jp nz,skip_attacking_state
         ;
       skip_attacking_state:
+      ; ----
       cp DEMON_SLEEPING_STATE
       jp nz,skip_sleeping_state
-        ;
+        ld c,b  ; Save index in C.
+        ; If demon is asleep, see if we should wake it up.
+        call get_random_number  ; get random number 0-255 in A.
+        cp 10
+        jp c,skip_sleeping_state ; if not, then just skip forward.
+          call get_random_number  ; generate a random offset for demon start x.
+          and %00000111 ; trim it
+          add a,LCD_RIGHT_BORDER  ; add right border
+          ld b,a
+          ld hl,demon_x_table
+          ld a,c
+          call set_table_item ; write this to demon[i] x
+          ; generate the y-coord.
+          call get_random_number
+          and %00000011 ; trim it
+          ld b,a
+          ld a,LCD_TOP_BORDER
+          sub b ; somewhere over the top border...
+          ld b,a
+          ld hl,demon_y_table
+          ld a,c
+          call set_table_item ; write this to demon[i] y
+          ld b,0
+          ld hl,demon_state_table
+          call set_table_item
+          ld hl,demon_timer_table
+          call set_table_item
+          ld b,DEMON_FLYING_1
+          ld hl,demon_sprite_table
+          call set_table_item
       skip_sleeping_state:
       pop bc
       pop hl
-    djnz demon_state_loop
+      inc b
+      ld a,(active_demons)
+      cp b
+      jp nz,demon_state_loop
     demon_state_loop_end:
     ;
     call begin_sprites                ; No sprites before this line!
@@ -549,6 +597,23 @@
       +:
       inc ix
     djnz -
+    ; Put demons on screen
+    ; ----
+    ld ix,demon_y_table
+    ld b,MAX_ACTIVE_DEMONS
+    -:
+      ld a,(ix+MAX_ACTIVE_DEMONS)
+      push bc
+        ld b,(ix+0)
+        ld c,a
+        ld a,DEMON_FLYING_1
+        call add_sprite
+      pop bc
+      +:
+      inc ix
+    djnz -
+
+
     SELECT_BANK SOUND_BANK
     call PSGFrame
     call PSGSFXFrame

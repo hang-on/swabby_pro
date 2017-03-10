@@ -1,6 +1,12 @@
 ; swabbylib.inc
 
 ; -----------------------------------------------------------------------------
+.ramsection "Swabby Library Variables" slot 3
+; -----------------------------------------------------------------------------
+  rnd_generator_word dw   ; Used by the random number generator.
+.ends
+
+; -----------------------------------------------------------------------------
 .section "Swabby lib" free
 ; -----------------------------------------------------------------------------
   change_swabby_state:
@@ -28,6 +34,7 @@
     inc (hl)
     pop hl
     pop de
+  ret
 .ends
 
 ; -----------------------------------------------------------------------------
@@ -46,6 +53,7 @@
     dec (hl)
     pop hl
     pop de
+  ret
 .ends
 
 ; -----------------------------------------------------------------------------
@@ -84,4 +92,34 @@
     pop hl
     pop de
   ret
+.ends
+; -----------------------------------------------------------------------------
+.section "get_random_number" free
+; -----------------------------------------------------------------------------
+  get_random_number:
+    ; Uses a 16-bit RAM variable called rnd_generator_word
+    ; Returns an 8-bit pseudo-random number in A
+    push hl
+      ld hl,(rnd_generator_word)
+      ld a,h         ; get high byte
+      rrca           ; rotate right by 2
+      rrca
+      xor h          ; xor with original
+      rrca           ; rotate right by 1
+      xor l          ; xor with low byte
+      rrca           ; rotate right by 4
+      rrca
+      rrca
+      rrca
+      xor l          ; xor again
+      rra            ; rotate right by 1 through carry
+      adc hl,hl      ; add rnd_generator_word to itself
+      jr nz,+
+        ld hl,$733c   ; if last xor resulted in zero then re-seed.
+      +:
+      ld a,r         ; r = refresh register = semi-random number
+      xor l          ; xor with l which is fairly random
+      ld (rnd_generator_word),hl
+    pop hl
+  ret                ; return random number in a
 .ends
