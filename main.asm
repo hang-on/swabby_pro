@@ -469,7 +469,7 @@
     ; Update demons.
     ld hl,active_demons_timer
     call inc_word
-    ld bc,400
+    ld bc,700
     call cp_word
     jp nz,skip_activate_demon
       ld a,(active_demons)
@@ -515,8 +515,8 @@
         ; TODO: Insert attack state switch (compare demon and player x) here..
         ld hl,demon_x_table ; Assume A is still index
         call get_table_item
-        cp LCD_TOP_BORDER-8 ; Is the demon outside the LCD (left side)?
-        jp nz,+
+        cp LCD_LEFT_BORDER-16 ; Is the demon outside the LCD (left side)?
+        jp nc,+
           ld a,c ; get index.
           ld b,DEMON_SLEEPING_STATE ; if demon is outside, put it to sleep.
           ld hl,demon_state_table
@@ -534,10 +534,10 @@
         ld c,b  ; Save index in C.
         ; If demon is asleep, see if we should wake it up.
         call get_random_number  ; get random number 0-255 in A.
-        cp 10
-        jp c,skip_sleeping_state ; if not, then just skip forward.
+        cp 1
+        jp nz,skip_sleeping_state ; if not, then just skip forward.
           call get_random_number  ; generate a random offset for demon start x.
-          and %00000111 ; trim it
+          and %00011111 ; trim it
           add a,LCD_RIGHT_BORDER  ; add right border
           ld b,a
           ld hl,demon_x_table
@@ -545,9 +545,9 @@
           call set_table_item ; write this to demon[i] x
           ; generate the y-coord.
           call get_random_number
-          and %00000011 ; trim it
+          and %00001111 ; trim it
           ld b,a
-          ld a,LCD_TOP_BORDER
+          ld a,LCD_TOP_BORDER+16
           sub b ; somewhere over the top border...
           ld b,a
           ld hl,demon_y_table
@@ -603,12 +603,14 @@
     ld b,MAX_ACTIVE_DEMONS
     -:
       ld a,(ix+MAX_ACTIVE_DEMONS)
-      push bc
-        ld b,(ix+0)
-        ld c,a
-        ld a,DEMON_FLYING_1
-        call add_sprite
-      pop bc
+      cp LCD_LEFT_BORDER-16
+      jp c,+
+        push bc
+          ld b,(ix+0)
+          ld c,a
+          ld a,DEMON_FLYING_1
+          call add_sprite
+        pop bc
       +:
       inc ix
     djnz -
