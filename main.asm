@@ -467,28 +467,36 @@
         ld (swabby_sprite),a
       +:
     end_of_swabby_fire:
-    ; Update demons.
-    ld hl,active_demons_timer
-    call inc_word
-    ld bc,700
-    call cp_word
-    jp nz,skip_activate_demon
-      ld a,(active_demons)
-      cp MAX_ACTIVE_DEMONS
-      jp z,skip_activate_demon
-        ; OK, time to activate another demon, and reset timer.
-        inc a
-        ld (active_demons),a
-        ld hl,0
-        ld (active_demons_timer),hl
+    ; -------------------------------------------------------------------------
+    ; U P D A T E  D E M O N S
+    ; -------------------------------------------------------------------------
+    ; Demons can be in one of three different states: 0 = flying, 1 = attacking
+    ; and 2 = sleeping. In the beginning only one demon is active. For every
+    ; 700th frame another demon is activated until we reach max (5 demons).
+    ; -------------------------------------------------------------------------
+    ; 1. See if it is time to activate a new demon.
+    ld hl,active_demons_timer       ; Get the timer.
+    call inc_word                   ; Increment it.
+    ld bc,700                       ; See if we should activate another demon.
+    call cp_word                    ; Word compare.
+    jp nz,skip_activate_demon       ; Skip forward if timer is not yet 700.
+      ld a,(active_demons)          ; OK, time to activate another demon.
+      cp MAX_ACTIVE_DEMONS          ; Are we already at 5 (max) active demons?
+      jp z,skip_activate_demon      ; If so, skip forward.
+        ; Both tests are passed - proceed with activation.
+        inc a                       ; Increment number of active demons.
+        ld (active_demons),a        ; And save it.
+        ld hl,0                     ; Reset the activation timer.
+        ld (active_demons_timer),hl ; And save it.
     skip_activate_demon:
-    ; Process all demons below...
-    ld b,0
-    demon_state_loop:               ; in this loop, assume B or C = index.
-      ld hl,demon_state_table
-      ld a,b
-      call get_table_item
-      ld c,b  ; save index
+    ; -------------------------------------------------------------------------
+    ; 2. Process all active demons.
+    ld b,0                          ; B will count through the (active) demons.
+    demon_state_loop:               ; Cycle through this loop for each demon.
+      ld hl,demon_state_table       ; Point to demon state table.
+      ld a,b                        ; Pass table index in A.
+      call get_table_item           ; Get state of current demon.
+      ld c,b
       push hl
       push bc
       ; ---
@@ -622,6 +630,7 @@
       skip_state_tests:
       pop bc
       pop hl
+      ld b,c
       inc b
       ld a,(active_demons)
       cp b
