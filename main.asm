@@ -498,7 +498,7 @@
         call inc_table_item
         call get_table_item
         cp 10
-        jp nz,+
+        jp nz,++
           ; Time to move down.
           ld a,c ; get index
           ld b,0
@@ -506,7 +506,21 @@
           ld hl,demon_y_table
           call inc_table_item
           ; TODO: insert sprite anim. here....
-        +:
+          ld hl,demon_sprite_table
+          call get_table_item
+          cp DEMON_FLYING_1
+          jp z,+
+            ld b,DEMON_FLYING_1
+            ld a,c
+            ld hl,demon_sprite_table
+            call set_table_item
+            jp ++
+          +:
+          ld b,DEMON_FLYING_2
+          ld a,c
+          ld hl,demon_sprite_table
+          call set_table_item
+        ++:
         ; Move left.
         ; DX[i]=-1
         ld a,c  ; get table index.
@@ -614,8 +628,6 @@
       +:
       inc ix
     djnz -
-
-
     SELECT_BANK SOUND_BANK
     call PSGFrame
     call PSGSFXFrame
