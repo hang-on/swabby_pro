@@ -86,9 +86,9 @@
   active_demons_timer dw
   demon_timer_table dsb MAX_ACTIVE_DEMONS
   demon_state_table dsb MAX_ACTIVE_DEMONS
-  demon_sprite_table dsb MAX_ACTIVE_DEMONS
   demon_y_table dsb MAX_ACTIVE_DEMONS
   demon_x_table dsb MAX_ACTIVE_DEMONS
+  demon_sprite_table dsb MAX_ACTIVE_DEMONS
 .ends
 ;
 .bank 0 slot 0
@@ -608,7 +608,7 @@
         push bc
           ld b,(ix+0)
           ld c,a
-          ld a,DEMON_FLYING_1
+          ld a,(ix+MAX_ACTIVE_DEMONS*2)
           call add_sprite
         pop bc
       +:
