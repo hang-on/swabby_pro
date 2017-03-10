@@ -491,85 +491,87 @@
     skip_activate_demon:
     ; -------------------------------------------------------------------------
     ; 2. Process all active demons.
-    ld b,0                          ; B will count through the (active) demons.
+    ld c,0                          ; C will count through the (active) demons.
     demon_state_loop:               ; Cycle through this loop for each demon.
       ld hl,demon_state_table       ; Point to demon state table.
-      ld a,b                        ; Pass table index in A.
+      ld a,c                        ; Pass table index in A.
       call get_table_item           ; Get state of current demon.
-      ld c,b
-      push hl
-      push bc
-      ; ---
+      ; -----------------------------------------------------------------------
       cp DEMON_FLYING_STATE
-      jp nz,skip_flying_state
-        ld hl,demon_timer_table
-        ld a,b
-        call inc_table_item
-        call get_table_item
-        cp 10
-        jp nz,++
-          ; Time to move down.
-          ld a,c ; get index
-          ld b,0
-          call set_table_item    ; Reset timer to zero.
-          ld hl,demon_y_table
-          call inc_table_item
+      ; -----------------------------------------------------------------------
+      jp nz,flying_state_end
+        ld hl,demon_timer_table     ; Point to the state timer table.
+        ld a,c                      ; Pass the index of current demon.
+        call inc_table_item         ; Increment the timer.
+        call get_table_item         ; Get the timer.
+        cp 10                       ; See if it is time to move down...
+        jp nz,++                    ; (once every 10th frame).
+          ; OK, time to reset timer, move down and animate.
+          ld a,c                    ; Get demon index back in A.
+          ld b,0                    ; (HL stil points to demon_timer_table).
+          call set_table_item       ; Reset timer to zero.
+          ld hl,demon_y_table       ; Point to demon's y-pos.
+          call inc_table_item       ; Increment y-pos (A still holds index).
           ; Animate demon every time it moves vertically.
-          ld hl,demon_sprite_table
-          call get_table_item
-          cp DEMON_FLYING_1
+          ld hl,demon_sprite_table  ; Point to the sprite table.
+          call get_table_item       ; Get the current sprite/tile/char.
+          cp DEMON_FLYING_1         ; Is it the first flying tile?
           jp z,+
-            ld b,DEMON_FLYING_1
-            ld a,c
-            ld hl,demon_sprite_table
-            call set_table_item
-            jp ++
-          +:
-          ld b,DEMON_FLYING_2
-          ld a,c
-          ld hl,demon_sprite_table
-          call set_table_item
+            ld b,DEMON_FLYING_1     ; No? - then set the tile to number 1.
+            ld a,c                  ; Index of demon (HL points to spr. table).
+            call set_table_item     ; Write new tile to table.
+            jp ++                   ;
+          +:                        ; Yes - first tile? - then switch to tile
+          ld b,DEMON_FLYING_2       ; number 2.
+          ld a,c                    ; Get index (HL points to sprite table).
+          call set_table_item       ; Write new tile to table.
         ++:
-        ; Move left.
-        ; DX[i]=-1
-        ld a,c  ; get table index.
-        ld hl,demon_x_table ; A (index should still be alright here...?)
-        call dec_table_item
-        ; TODO: Insert attack state switch (compare demon and player x) here..
-        ld a,c  ; get table index.
-        ld hl,demon_x_table ; A (index should still be alright here...?)
-        call get_table_item
-        ld b,a
-        ld a,(swabby_x)
-        cp b
-        jp nz,+
-          ; Demon X matches Swabby X > attack!
-          SELECT_BANK SOUND_BANK
-          ld hl,demon_attack
-          push bc
-          ld c,SFX_CHANNEL3
-          call PSGSFXPlay
-          pop bc
-          ld b,DEMON_ATTACKING_STATE
-          ld a,c
-          ld hl,demon_state_table
-          call set_table_item
+        ;----------------------------------------------------------------------
+        ; Move the demon left.
+        ld a,c                      ; Get table index.
+        ld hl,demon_x_table         ; Point to table.
+        call dec_table_item         ; Decrement x, thus moving left.
+        ; ---------------------------------------------------------------------
+        ; Determine if demon should switch to attack mode.
+        ld hl,demon_x_table         ; Point to table (A is still index).
+        call get_table_item         ; Get x-pos.
+        ld b,a                      ; Put demon x-pos in B.
+        ld a,(swabby_x)             ; Get Swabby x-pos.
+        cp b                        ; Swabby x == demon x?
+        jp nz,+                     ; If not, then skip the following...
+          ; -------------------------------------------------------------------
+          ; Play attack sound effect and switch this demon state to attack.
+          SELECT_BANK SOUND_BANK    ; Sound assets in slot 2.
+          ld hl,demon_attack        ; Point HL to sound effect.
+          ld d,c                    ; Save demon index.
+          ld c,SFX_CHANNEL3         ; SFX in channel 3.
+          call PSGSFXPlay           ; Play it.
+          ld c,d                    ; Restore index.
+          ld b,DEMON_ATTACKING_STATE  ; Attack!
+          ld a,c                    ; Pass demon index in A.
+          ld hl,demon_state_table   ; Write new attack state to table.
+          call set_table_item       ; ... here!
         +:
-        ;
-        ld a,c
-        ld hl,demon_x_table ; Assume A is still index
-        call get_table_item
-        cp LCD_LEFT_BORDER-16 ; Is the demon outside the LCD (left side)?
-        jp nc,+
-          ld a,c ; get index.
-          ld b,DEMON_SLEEPING_STATE ; if demon is outside, put it to sleep.
-          ld hl,demon_state_table
-          call set_table_item
+        ; ---------------------------------------------------------------------
+        ; Determine if demon is beyond the left LCD border, and thus can be
+        ; put to sleep.
+        ld a,c                      ; Get index from C.
+        ld hl,demon_x_table         ; Point to demo x table.
+        call get_table_item         ; Get demon's current x-pos.
+        cp LCD_LEFT_BORDER-16       ; Is the demon to the left of the LCD?
+        jp nc,+                     ; If not, then skip the following.
+          ; -------------------------------------------------------------------
+          ; Put demon to sleep.
+          ld a,c                    ; Get index.
+          ld b,DEMON_SLEEPING_STATE ; Load sleep state constant into B.
+          ld hl,demon_state_table   ; Point HL to state table.
+          call set_table_item       ; Put this demon to sleep.
         +:
-        jp skip_state_tests
-      skip_flying_state:
-      ; ----
+        jp state_tests_end          ; Skip further state tests for this demon.
+      flying_state_end:
+      ; -----------------------------------------------------------------------
       cp DEMON_ATTACKING_STATE
+      ; -----------------------------------------------------------------------
       jp nz,skip_attacking_state
         ; - handle demons attacking
         ld a,c
@@ -582,7 +584,7 @@
           ld a,c
           ld hl,demon_state_table
           call set_table_item
-          jp skip_state_tests
+          jp state_tests_end
         +:
         ld b,a
         ld a,c
@@ -591,12 +593,13 @@
         ld b,DEMON_ATTACKING
         ld hl,demon_sprite_table
         call set_table_item
-        jp skip_state_tests
+        jp state_tests_end
       skip_attacking_state:
-      ; ----
+      ; -----------------------------------------------------------------------
       cp DEMON_SLEEPING_STATE
+      ; -----------------------------------------------------------------------
       jp nz,skip_sleeping_state
-        ld c,b  ; Save index in C.
+        ;ld c,b  ; Save index in C.
         ; If demon is asleep, see if we should wake it up.
         call get_random_number  ; get random number 0-255 in A.
         cp 1
@@ -627,13 +630,10 @@
           ld hl,demon_sprite_table
           call set_table_item
       skip_sleeping_state:
-      skip_state_tests:
-      pop bc
-      pop hl
-      ld b,c
-      inc b
+      state_tests_end:
+      inc c
       ld a,(active_demons)
-      cp b
+      cp c
       jp nz,demon_state_loop
     demon_state_loop_end:
     ;
