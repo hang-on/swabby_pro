@@ -491,19 +491,23 @@
         ;
         ld hl,demon_timer_table
         ld a,b
-        call inc_array_element
-        call get_array_element
+        call inc_table_item
+        call get_table_item
         cp 10
         jp nz,+
           ; Time to move down.
-          ld b,0
-          call set_array_element    ; Reset timer to zero.
-          ld hl,demon_y_table
-          call inc_array_element
-          ; TODO: insert sprite anim. here....
+          push bc ; Save array index
+            ld b,0
+            call set_table_item    ; Reset timer to zero.
+            ld hl,demon_y_table
+            call inc_table_item
+            ; TODO: insert sprite anim. here....
+          pop bc ; restore array index.
         +:
         ; Move left.
         ; DX[i]=-1
+        ld hl,demon_x_table
+        call dec_table_item
       skip_flying_state:
       cp DEMON_ATTACKING_STATE
       jp nz,skip_attacking_state
