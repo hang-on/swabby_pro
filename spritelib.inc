@@ -74,6 +74,7 @@
 
     ld hl,NextFreeSprite
     inc (hl)
+    
   ret
 .ends
 

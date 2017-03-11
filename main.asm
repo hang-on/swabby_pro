@@ -474,21 +474,22 @@
     ; and 2 = sleeping. In the beginning only one demon is active. For every
     ; 700th frame another demon is activated until we reach max (5 demons).
     ; -------------------------------------------------------------------------
-    ; 1. See if it is time to activate a new demon.
+    ; 1. See if it is time to activate a new demon (two tests).
     ld hl,active_demons_timer       ; Get the timer.
     call inc_word                   ; Increment it.
     ld bc,700                       ; See if we should activate another demon.
     call cp_word                    ; Word compare.
-    jp nz,skip_activate_demon       ; Skip forward if timer is not yet 700.
-      ld a,(active_demons)          ; OK, time to activate another demon.
+    jp nz,activate_demon_end        ; Skip forward if timer is not yet 700.
+      ; Passed first test (timer); prepare second test (# active demons).
+      ld a,(active_demons)          ; Get number og active demons.
       cp MAX_ACTIVE_DEMONS          ; Are we already at 5 (max) active demons?
-      jp z,skip_activate_demon      ; If so, skip forward.
+      jp z,activate_demon_end       ; If so, skip forward.
         ; Both tests are passed - proceed with activation.
         inc a                       ; Increment number of active demons.
         ld (active_demons),a        ; And save it.
         ld hl,0                     ; Reset the activation timer.
         ld (active_demons_timer),hl ; And save it.
-    skip_activate_demon:
+    activate_demon_end:
     ; -------------------------------------------------------------------------
     ; 2. Process all active demons.
     ld c,0                          ; C will count through the (active) demons.
@@ -500,12 +501,14 @@
       cp DEMON_FLYING_STATE
       ; -----------------------------------------------------------------------
       jp nz,flying_state_end
+        ; Start by checking this demon's timer (for vert. movement and anim.)
         ld hl,demon_timer_table     ; Point to the state timer table.
         ld a,c                      ; Pass the index of current demon.
         call inc_table_item         ; Increment the timer.
         call get_table_item         ; Get the timer.
         cp 10                       ; See if it is time to move down...
         jp nz,++                    ; (once every 10th frame).
+          ; -------------------------------------------------------------------
           ; OK, time to reset timer, move down and animate.
           ld a,c                    ; Get demon index back in A.
           ld b,0                    ; (HL stil points to demon_timer_table).
@@ -551,6 +554,9 @@
           ld a,c                    ; Pass demon index in A.
           ld hl,demon_state_table   ; Write new attack state to table.
           call set_table_item       ; ... here!
+          ld b,DEMON_ATTACKING      ; Load the attacking tile.
+          ld hl,demon_sprite_table  ; Point HL to sprite table.
+          call set_table_item       ; Write new sprite/tile for this demon.
         +:
         ; ---------------------------------------------------------------------
         ; Determine if demon is beyond the left LCD border, and thus can be
@@ -572,72 +578,74 @@
       ; -----------------------------------------------------------------------
       cp DEMON_ATTACKING_STATE
       ; -----------------------------------------------------------------------
-      jp nz,skip_attacking_state
-        ; - handle demons attacking
-        ld a,c
-        ld hl,demon_y_table
-        call get_table_item
-        add a,3
-        cp LCD_BOTTOM_BORDER+16
-        jp c,+
-          ld b,DEMON_SLEEPING_STATE
-          ld a,c
-          ld hl,demon_state_table
-          call set_table_item
-          jp state_tests_end
+      jp nz,attacking_state_end
+        ; Add 3 to this demon's y-pos and compare to the bottom of the LCD.
+        ld a,c                      ; Get index.
+        ld hl,demon_y_table         ; Point HL to y-pos table.
+        call get_table_item         ; Get this demon's y-pos.
+        add a,3                     ; Demon y-speed is 3, it seems...
+        cp LCD_BOTTOM_BORDER+16     ; Compare it to the LCD bottom border.
+        jp c,+                      ; If demon is still above, then jump ahead.
+          ; -------------------------------------------------------------------
+          ; Demon is below LCD, so let's put it to sleep.
+          ld b,DEMON_SLEEPING_STATE ; Load sleep state constant.
+          ld a,c                    ; And index.
+          ld hl,demon_state_table   ; Point HL to state table.
+          call set_table_item       ; Write new state.
+          jp state_tests_end        ; Jump out of further state tests.
         +:
-        ld b,a
-        ld a,c
-        ld hl,demon_y_table
-        call set_table_item ; write new y to demon table.
-        ld b,DEMON_ATTACKING
-        ld hl,demon_sprite_table
-        call set_table_item
-        jp state_tests_end
-      skip_attacking_state:
+        ; ---------------------------------------------------------------------
+        ; Write the updated y-pos back to y-pos table.
+        ld b,a                      ; Load y-pos into B.
+        ld a,c                      ; And index into A.
+        ld hl,demon_y_table         ; Point HL to y table.
+        call set_table_item         ; Write new y-pos to demon table.
+        jp state_tests_end          ; Note: Tile was set when state switched.
+      attacking_state_end:
       ; -----------------------------------------------------------------------
       cp DEMON_SLEEPING_STATE
       ; -----------------------------------------------------------------------
-      jp nz,skip_sleeping_state
-        ;ld c,b  ; Save index in C.
+      jp nz,sleeping_state_end
         ; If demon is asleep, see if we should wake it up.
-        call get_random_number  ; get random number 0-255 in A.
-        cp 1
-        jp nz,skip_sleeping_state ; if not, then just skip forward.
-          call get_random_number  ; generate a random offset for demon start x.
-          and %00011111 ; trim it
-          add a,LCD_RIGHT_BORDER  ; add right border
-          ld b,a
-          ld hl,demon_x_table
-          ld a,c
-          call set_table_item ; write this to demon[i] x
-          ; generate the y-coord.
-          call get_random_number
-          and %00001111 ; trim it
-          ld b,a
-          ld a,LCD_TOP_BORDER+16
-          sub b ; somewhere over the top border...
-          ld b,a
+        call get_random_number      ; Get random number 0-255 in A.
+        cp 1                        ; If rnd = 1 then wake this demon.
+        jp nz,sleeping_state_end    ; Else just skip forward.
+          ; -------------------------------------------------------------------
+          ; Wake this demon and give it start x,y position.
+          call get_random_number    ; Generate a random offset for demon x.
+          and %00011111             ; Trim it to 0-31.
+          add a,LCD_RIGHT_BORDER    ; Add right border.
+          ld b,a                    ; Prepare parameters for function call.
+          ld hl,demon_x_table       ;
+          ld a,c                    ;
+          call set_table_item       ; Write start x to this demon.
+          call get_random_number    ; Generate a random offset for demon y.
+          and %00001111             ; Trim it to 0-15.
+          ld b,a                    ;
+          ld a,LCD_TOP_BORDER+16    ; Make sure demon starts somewhere over the
+          sub b                     ; top border...
+          ld b,a                    ; Write new y to this demon.
           ld hl,demon_y_table
           ld a,c
-          call set_table_item ; write this to demon[i] y
+          call set_table_item
           ld b,0
           ld hl,demon_state_table
-          call set_table_item
+          call set_table_item       ; Set state to 0 = flying.
           ld hl,demon_timer_table
-          call set_table_item
+          call set_table_item       ; Set timer to 0.
           ld b,DEMON_FLYING_1
           ld hl,demon_sprite_table
-          call set_table_item
-      skip_sleeping_state:
+          call set_table_item       ; Set tile to flying.
+      sleeping_state_end:
+      ; -----------------------------------------------------------------------
       state_tests_end:
-      inc c
-      ld a,(active_demons)
-      cp c
-      jp nz,demon_state_loop
-    demon_state_loop_end:
+      inc c                         ; Increment loop counter.
+      ld a,(active_demons)          ; Get number of active demons.
+      cp c                          ; Have we reached the limit?
+      jp nz,demon_state_loop        ; No, loop back and process next demon.
+    demon_state_loop_end:           ; Else, state loop finished.
     ;
-    call begin_sprites                ; No sprites before this line!
+    call begin_sprites              ; No sprites before this line!
     ; Put the swabby sprite in the buffer. FIXME: Move Swabby into the middle
     ; of the SAT to avoid Swabby-flicker (if it becomes a problem).
     ld hl,swabby_y
@@ -664,26 +672,30 @@
       +:
       inc ix
     djnz -
-    ; Put demons on screen
-    ; ----
-    ld ix,demon_y_table
-    ld b,MAX_ACTIVE_DEMONS
+    ; -------------------------------------------------------------------------
+    ; Put relevant demons on screen
+    ld ix,demon_y_table                 ; The y-table is the located before
+    ld b,MAX_ACTIVE_DEMONS              ; the x-table. Process all demons.
     -:
-      ld a,(ix+MAX_ACTIVE_DEMONS)
-      cp LCD_LEFT_BORDER-16
-      jp c,+
-        push bc
-          ld b,(ix+0)
-          ld c,a
-          ld a,(ix+MAX_ACTIVE_DEMONS*2)
-          call add_sprite
-        pop bc
+      ld a,(ix+MAX_ACTIVE_DEMONS)       ; Get this demon's x-pos.
+      cp LCD_LEFT_BORDER-16             ; Is it to the left of the LCD?
+      jp c,+                            ; Yes, then don't draw it!
+        push bc                         ; Save loop counter.
+          ld b,(ix+0)                   ; Get demon y-pos.
+          ld c,a                        ; Get demon x-pos.
+          ld a,(ix+MAX_ACTIVE_DEMONS*2) ; Get character code (tile).
+          call add_sprite               ; Add this demon sprite to the buffer.
+        pop bc                          ; Restore loop counter.
       +:
-      inc ix
-    djnz -
+      inc ix                            ; Point to next demon's y-pos.
+    djnz -                              ; Loop until all demons are processed.
+    ; -------------------------------------------------------------------------
+    ; Perform PSGlib housekeeping.
     SELECT_BANK SOUND_BANK
     call PSGFrame
     call PSGSFXFrame
+    ; -------------------------------------------------------------------------
+    ; End of main loop.
     jp main_loop
     ;
 .ends
