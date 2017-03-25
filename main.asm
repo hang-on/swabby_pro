@@ -77,6 +77,10 @@
       or d
     jp nz,-
     ; Initialize the variables.
+    ld a,SWABBY_Y_INIT
+    ld (swabby_y),a
+    ld a,SWABBY_X_INIT
+    ld (swabby_x),a
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
@@ -96,8 +100,17 @@
     ;
     ; update()
     call get_input_ports
+    ;
+    call begin_sprites
 
+    ;
   jp main_loop
+  swabby_table:
+    ; Table to control Swabby meta sprite (charnum, x, y... repeat)
+    .db 0, 0, 0, 1, 8, 0, 2, 16, 0
+    .db 3, 0, 8, 4, 8, 8, 5, 16, 8
+    .db 6, 0, 16, 7, 8, 16, 8, 16, 16
+
 .ends
 ;
 .bank 1 slot 1
