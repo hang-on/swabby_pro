@@ -102,15 +102,29 @@
     call get_input_ports
     ;
     call begin_sprites
-
+    ld hl,swabby_table
+    ld d,9
+    -:
+      ld a,(swabby_y)
+      add a,(hl)
+      ld b,a
+      inc hl
+      ld a,(swabby_x)
+      add a,(hl)
+      ld c,a
+      inc hl
+      ld a,(hl)
+      inc hl
+      call add_sprite
+      dec d
+    jp nz,-
     ;
   jp main_loop
   swabby_table:
-    ; Table to control Swabby meta sprite (charnum, x, y... repeat)
-    .db 0, 0, 0, 1, 8, 0, 2, 16, 0
-    .db 3, 0, 8, 4, 8, 8, 5, 16, 8
-    .db 6, 0, 16, 7, 8, 16, 8, 16, 16
-
+    ; Table to control Swabby meta sprite (y,x,charnum... repeat)
+    .db 0, 0, 0, 0, 8, 1, 0, 16, 2
+    .db 8, 0, 16, 8, 8, 17, 8, 16, 18
+    .db 16, 0, 32, 16, 8, 33, 16, 16, 34
 .ends
 ;
 .bank 1 slot 1

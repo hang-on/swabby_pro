@@ -29,14 +29,15 @@
   ; Entry: A = Character code (character in bank 2).
   ;        B = vertical position, C = horizontal position.
   ; Exit:
-  ; Uses: N.A.
+  ; Uses: None - all registers saved!
   add_sprite:
     ; Test for sprite overflow (more than 64 hardware sprites at once).
+    SAVE_REGISTERS
     ld d,a                    ; Save the tile in unused register.
     ld a,(NextFreeSprite)
     inc a
     cp 65
-    ret nc
+    jp nc,exit_add_sprite
     ld a,d                    ; Restore tile in A.
     ;
     push af
@@ -74,7 +75,9 @@
 
     ld hl,NextFreeSprite
     inc (hl)
-    
+    ;
+    exit_add_sprite:
+    RESTORE_REGISTERS
   ret
 .ends
 
