@@ -16,7 +16,8 @@ copy %folder%%filename%
 convert colormap.png  %filename% -append %filename%
 
 :: Use ImageMagick to convert the image to 16 colors.
-convert %filename% -remap colormap.png  %filename%
+convert %filename% -quantize RGB -remap colormap.png  %filename%
+
 
 :: Use bmp2tile to make tiles out of the appended image.
 bmp2tile.exe %filename% -savetiles %filename%_tiles.inc -fullpalette -spritepalette -noremovedupes -nomirror -tileoffset 128 -exit
