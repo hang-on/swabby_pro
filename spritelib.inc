@@ -29,7 +29,7 @@
   ; Entry: A = Character code (character in bank 2).
   ;        B = vertical position, C = horizontal position.
   ; Exit:
-  ; Uses: None - all registers saved!
+  ; Uses: None - all registers saved
   add_sprite:
     ; Test for sprite overflow (more than 64 hardware sprites at once).
     SAVE_REGISTERS
@@ -86,7 +86,7 @@
 ; -----------------------------------------------------------------------------
   WipeData:
     .rept 64
-      .db SPRITE_TERMINATOR
+      .db LCD_BOTTOM_BORDER+1
     .endr
 
   begin_sprites:
