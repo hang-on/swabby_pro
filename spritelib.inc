@@ -3,6 +3,7 @@
 ; *****************************************************************************
 ; Note: Spritelib depends on constants from gglib.inc.
 
+.equ PLAYER_SIZE 9          ; Number of tiles not part of asc/desc flicker.
 .equ ASCENDING 0
 .equ DESCENDING $ff
 
@@ -157,12 +158,12 @@
       out (CONTROL_PORT),a
       ld c,DATA_PORT
       ld hl,SpriteBufferY
-      .rept 8
+      .rept PLAYER_SIZE
         outi
       .endr
 
       ld hl,SpriteBufferY+63    ; Point to last y-value in buffer.
-      .rept 56
+      .rept 64-PLAYER_SIZE
         outd                    ; Output and decrement HL, thus going
       .endr                     ; backwards (descending) through the buffer.
 
@@ -175,14 +176,14 @@
       out (CONTROL_PORT),a
       ld c,DATA_PORT
       ld hl,SpriteBufferXC
-      .rept 8
+      .rept PLAYER_SIZE
         outi
         outi
       .endr
 
       ld hl,SpriteBufferXC+126
       ld de,-4
-      .rept 56
+      .rept 64-PLAYER_SIZE
         outi
         outi
         add hl,de
