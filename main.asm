@@ -51,9 +51,9 @@
   ;
   ; ---------------------------------------------------------------------------
   prepare_copenhagen:
-    ; Prepare the sandbox mode
+    ; Prepare Copenhagen mode (large, unzoomed sprites)
     SELECT_BANK COPENHAGEN_BANK
-    ld bc,sandbox_tiles_end-sandbox_tiles
+    ld bc,copenhagen_tiles_end-copenhagen_tiles
     ld de,$0e00                             ; Address of tile nr. 128 - 16
     ld hl,copenhagen_tiles                  ; This will load 127 tiles to the
     call load_vram                          ; first bank and 127 to the second.
@@ -173,7 +173,7 @@
     .incbin "bank_4\demon_attack.psg"
 .ends
 ;
-.bank 5 slot 2
+.bank COPENHAGEN_BANK slot 2
 ; -----------------------------------------------------------------------------
 .section "Copenhagen mode assets" free
 ; -----------------------------------------------------------------------------
