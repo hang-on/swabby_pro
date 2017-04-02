@@ -1,4 +1,8 @@
 ;
+  .asciitable
+    map " " to "z" = 0
+  .enda
+;
 ; Misc. definitions:
   .equ PICO8_PALETTE_SIZE 16
 ; Game states:
@@ -51,6 +55,8 @@
   .equ DEMON_FLYING_STATE 0
 ; Copenhagen mode:
   .equ COPENHAGEN_BANK 5
+; Font:
+  .equ FONT_BANK 6
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 .ramsection "Main variables" slot 3

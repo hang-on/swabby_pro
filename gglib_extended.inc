@@ -176,3 +176,51 @@
     ;
   jp load_spritebank
 .ends
+;
+; -----------------------------------------------------------------------------
+.section "Printing" free
+; -----------------------------------------------------------------------------
+  print:
+    ; Print a string to the name table.
+    ; Entry: A = string length.
+    ;        B = row, C = column.
+    ;        HL = Pointer to string.
+    ; Uses: AF, BC, DE, HL
+    push hl                       ; Save pointer and string length for later.
+    push af
+    ld hl,NAME_TABLE_START        ; Get ready to calculate destination address.
+    ld a,b
+    cp 0
+    jp z,add_row_offset_end
+      ld de,$40                   ; For each row, add $40 to the dest. address.
+      -:
+        add hl,de
+      djnz -
+    add_row_offset_end:
+    ld a,c
+    cp 0
+    jp z,add_column_offset_end
+      ld b,a
+      ld de,2                     ; Each column adds 1 word to dest. address.
+      -:
+        add hl,de
+      djnz -
+    add_column_offset_end:
+    ld a,l                        ; Setup vram to load bytes at dest. address.
+    out (CONTROL_PORT),a
+    ld a,h
+    or VRAM_WRITE_COMMAND
+    out (CONTROL_PORT),a
+    ;
+    pop af                          ; Get string length from stack.
+    ld b,a                          ; Use in loop counter.
+    pop hl                          ; Get pointer to string from stack.
+    -:
+      ld a,(hl)                     ; Get character from string.
+      out (DATA_PORT),a             ; Write it to name table.
+      ld a,%00001000                ; Select sprite palette for this char.
+      out (DATA_PORT),a             ; Write 2nd byte to name table.
+      inc hl                        ; Point to next char.
+    djnz -
+  ret
+.ends

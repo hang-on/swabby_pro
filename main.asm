@@ -76,11 +76,26 @@
       ld a,e
       or d
     jp nz,-
+    ; Load the tiles.
+    SELECT_BANK FONT_BANK
+    ld bc,font_tiles_end-font_tiles
+    ld de,$0000
+    ld hl,font_tiles
+    call load_vram
+    ; Display test message
+    ld hl,my_string
+    ld a,7
+    ld b,3
+    ld c,6
+    call print
+
     ; Initialize the variables.
     ld a,SWABBY_Y_INIT
     ld (swabby_y),a
     ld a,SWABBY_X_INIT
     ld (swabby_x),a
+    ld a,SWABBY_IDLE
+    ld (swabby_state),a
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
@@ -91,6 +106,8 @@
     ld a,GS_RUN_COPENHAGEN
     ld (game_state),a
   jp main_loop
+  my_string:
+    .asc "SWABBY!"
   ;
   ; ---------------------------------------------------------------------------
   run_copenhagen:
@@ -101,6 +118,47 @@
     ; update()
     call get_input_ports
     ;
+    ; Handle Swabby states.
+    ld a,(swabby_state)
+    cp SWABBY_IDLE
+    jp nz,swabby_idle_end
+    ; Handle Swabby idle state:
+      call is_dpad_pressed
+      jp nc,swabby_idle_end
+        ld a,SWABBY_MOVING
+        ld (swabby_state),a
+    swabby_idle_end:
+    ld a,(swabby_state)
+    cp SWABBY_MOVING
+    jp nz,swabby_moving_end
+    ; Handle Swabby moving state:
+      call is_dpad_pressed
+      jp c,+
+        ld a,SWABBY_IDLE            ; If dpad is not pressed anymore, switch
+        ld (swabby_state),a         ; out of move state, and back to idle.
+        jp swabby_moving_end
+      +:
+      call IsPlayer1RightPressed
+      jp nc,+
+        ld hl,swabby_x
+        inc (hl)
+      +:
+      call IsPlayer1LeftPressed
+      jp nc,+
+        ld hl,swabby_x
+        dec (hl)
+      +:
+      call IsPlayer1UpPressed
+      jp nc,+
+        ld hl,swabby_y
+        dec (hl)
+      +:
+      call IsPlayer1DownPressed
+      jp nc,+
+        ld hl,swabby_y
+        inc (hl)
+      +:
+    swabby_moving_end:
     call begin_sprites
     ld hl,swabby_table
     ld d,9
@@ -180,4 +238,13 @@
   copenhagen_tiles:
     .include "bank_5\spritesheet.png_tiles.inc"
   copenhagen_tiles_end:
+.ends
+;
+.bank FONT_BANK slot 2
+; -----------------------------------------------------------------------------
+.section "Font assets" free
+; -----------------------------------------------------------------------------
+  font_tiles:
+    .include "bank_6\asciifont_atascii_tiles.inc"
+  font_tiles_end:
 .ends
