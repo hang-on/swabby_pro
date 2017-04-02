@@ -17,6 +17,13 @@
     ld hl,pico8_palette
     call load_cram
     ;
+    ; Load the font tiles.
+    SELECT_BANK FONT_BANK
+    ld bc,font_tiles_end-font_tiles
+    ld de,$0000
+    ld hl,font_tiles
+    call load_vram
+    ;
     call PSGInit
     ;
     ld a,INITIAL_GAME_STATE
@@ -46,10 +53,26 @@
     .dw init, prepare_titlescreen, run_titlescreen
     .dw prepare_recorder, run_recorder, prepare_sandbox, run_sandbox
     .dw prepare_copenhagen, run_copenhagen
+    .dw prepare_devmenu, run_devmenu
   ;
   ; ---------------------------------------------------------------------------
   ;
   ; ---------------------------------------------------------------------------
+  prepare_devmenu:
+    ; Turn on screen and frame interrupts.
+    ld a,DISPLAY_1_FRAME_1_SIZE_0
+    ld b,1
+    call set_register
+    ei
+    ; When all is set, change the game state.
+    ld a,GS_RUN_DEVMENU
+    ld (game_state),a
+  jp main_loop
+  ;
+  run_devmenu:
+    ;
+  jp main_loop
+  ;
   prepare_copenhagen:
     ; Prepare Copenhagen mode (large, unzoomed sprites)
     SELECT_BANK COPENHAGEN_BANK
@@ -76,12 +99,6 @@
       ld a,e
       or d
     jp nz,-
-    ; Load the tiles.
-    SELECT_BANK FONT_BANK
-    ld bc,font_tiles_end-font_tiles
-    ld de,$0000
-    ld hl,font_tiles
-    call load_vram
     ; Display test message
     ld hl,my_string
     ld a,7
@@ -244,6 +261,10 @@
 ; -----------------------------------------------------------------------------
 .section "Font assets" free
 ; -----------------------------------------------------------------------------
+  ; Put this ascii map in header:
+  ;   .asciitable
+  ;      map " " to "z" = 0
+  ;    .enda
   font_tiles:
     .include "bank_6\asciifont_atascii_tiles.inc"
   font_tiles_end:

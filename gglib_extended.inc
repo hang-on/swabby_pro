@@ -182,6 +182,7 @@
 ; -----------------------------------------------------------------------------
   print:
     ; Print a string to the name table.
+    ; N.B. Make sure that this function is not interrupted!
     ; Entry: A = string length.
     ;        B = row, C = column.
     ;        HL = Pointer to string.

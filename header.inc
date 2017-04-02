@@ -15,6 +15,8 @@
   .equ GS_RUN_SANDBOX 6
   .equ GS_PREPARE_COPENHAGEN 7    ; Copenhagen mode: Pro sprites!
   .equ GS_RUN_COPENHAGEN 8
+  .equ GS_PREPARE_DEVMENU 9
+  .equ GS_RUN_DEVMENU 10
   ;
   .equ INITIAL_GAME_STATE GS_PREPARE_COPENHAGEN ; Where to go after boot?
 ; Titlesreen assets:
