@@ -18,7 +18,7 @@
   .equ GS_PREPARE_DEVMENU 9
   .equ GS_RUN_DEVMENU 10
   ;
-  .equ INITIAL_GAME_STATE GS_PREPARE_COPENHAGEN ; Where to go after boot?
+  .equ INITIAL_GAME_STATE GS_PREPARE_DEVMENU ; Where to go after boot?
 ; Titlesreen assets:
   .equ TITLESCREEN_BANK 2         ; Titlesreen assets are in bank 2.
   .equ BLINKER_WIDTH 18           ; The blinking "press start button" message

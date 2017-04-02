@@ -59,6 +59,21 @@
   ;
   ; ---------------------------------------------------------------------------
   prepare_devmenu:
+    ; Display menu text
+    ld hl,menu_title
+    ld a,17
+    ld b,4
+    ld c,7
+    call print
+
+
+    ; Item 1.
+    ld hl,item_1
+    ld a,11
+    ld b,6
+    ld c,10
+    call print
+
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -68,6 +83,13 @@
     ld a,GS_RUN_DEVMENU
     ld (game_state),a
   jp main_loop
+  ; Menu item strings:
+  menu_title:
+    .asc "Swabby debug menu"
+  item_1:
+    .asc "Menu item 1"
+  item_2:
+  item_3:
   ;
   run_devmenu:
     ;
