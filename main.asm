@@ -133,14 +133,25 @@
       jp menu_end
     +:
       call IsPlayer1DownPressed
-      jp nc,menu_end
+      jp nc,switch_menu_down_end
         ld a,(menu_state)
         cp MENU_MAX
-        jp z,menu_end
+        jp z,switch_menu_down_end
           inc a
           ld (menu_state),a
           xor a
           ld (menu_timer),a
+      switch_menu_down_end:
+      call IsPlayer1UpPressed
+      jp nc,switch_menu_up_end
+        ld a,(menu_state)
+        cp MENU_MIN
+        jp z,switch_menu_up_end
+          dec a
+          ld (menu_state),a
+          xor a
+          ld (menu_timer),a
+      switch_menu_up_end:
     menu_end:
     ; Place menu sprite
     call begin_sprites
@@ -155,7 +166,7 @@
     call add_sprite
   jp main_loop
   menu_table:
-    .db 46, 62, 78
+    .db 46, 62, 78                          ; Contains y-pos for menu selector.
   ;
   prepare_copenhagen:
     ; Prepare Copenhagen mode (large, unzoomed sprites)

@@ -63,7 +63,7 @@
   ; Development menu:
   .equ MENU_MIN 0
   .equ MENU_MAX 2
-  .equ MENU_DELAY 50
+  .equ MENU_DELAY 10
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 .ramsection "Main variables" slot 3
