@@ -60,6 +60,10 @@
 ; Font:
   .equ FONT_BANK 6
   .equ STRING_TERMINATOR 3        ; Terminate strings with #
+  ; Development menu:
+  .equ MENU_MIN 0
+  .equ MENU_MAX 2
+  .equ MENU_DELAY 50
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 .ramsection "Main variables" slot 3
@@ -96,4 +100,7 @@
   demon_y_table dsb MAX_ACTIVE_DEMONS
   demon_x_table dsb MAX_ACTIVE_DEMONS
   demon_sprite_table dsb MAX_ACTIVE_DEMONS
+  ;
+  menu_timer db
+  menu_state db
 .ends

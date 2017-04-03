@@ -113,8 +113,7 @@
 ; -----------------------------------------------------------------------------
   ; Load the vram sat with the SatY and SatXC buffers.
   ; Sonic 2 inspired flicker engine is in place: Flicker sprites by loading the
-  ; SAT in ascending/descending order every other frame. Always keep first 8
-  ; sprites on top (for a non-flickering master object, i.e. the player).
+  ; SAT in ascending/descending order every other frame.
   load_sat:
     ld a,(SATLoadMode)
     cp DESCENDING

@@ -92,6 +92,10 @@
     ld de,$0e00                             ; Address of tile nr. 128 - 16
     ld hl,copenhagen_tiles                  ; This will load 127 tiles to the
     call load_vram                          ; first bank and 127 to the second.
+    ; Set menu state
+    xor a
+    ld (menu_state),a
+    ld (menu_timer),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -120,14 +124,38 @@
     ;
     ; update()
     call get_input_ports
-    ; TODO: Add menu state machine.
+    ;
+    ld a,(menu_timer)
+    cp MENU_DELAY
+    jp z,+
+      inc a
+      ld (menu_timer),a
+      jp menu_end
+    +:
+      call IsPlayer1DownPressed
+      jp nc,menu_end
+        ld a,(menu_state)
+        cp MENU_MAX
+        jp z,menu_end
+          inc a
+          ld (menu_state),a
+          xor a
+          ld (menu_timer),a
+    menu_end:
+    ; Place menu sprite
     call begin_sprites
+    ld hl,menu_table
+    ld d,0
+    ld a,(menu_state)
+    ld e,a
+    add hl,de
+    ld b,(hl)
     ld a,3
-    ld b,46
     ld c,70
     call add_sprite
-
   jp main_loop
+  menu_table:
+    .db 46, 62, 78
   ;
   prepare_copenhagen:
     ; Prepare Copenhagen mode (large, unzoomed sprites)
