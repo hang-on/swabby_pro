@@ -59,6 +59,7 @@
   .equ COPENHAGEN_BANK 5
 ; Font:
   .equ FONT_BANK 6
+  .equ STRING_TERMINATOR 3        ; Terminate strings with #
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 .ramsection "Main variables" slot 3

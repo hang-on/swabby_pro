@@ -181,14 +181,13 @@
 .section "Printing" free
 ; -----------------------------------------------------------------------------
   print:
-    ; Print a string to the name table.
+    ; Print a string to the name table. Terminate with #
     ; N.B. Make sure that this function is not interrupted!
-    ; Entry: A = string length.
+    ; Entry:
     ;        B = row, C = column.
     ;        HL = Pointer to string.
     ; Uses: AF, BC, DE, HL
     push hl                       ; Save pointer and string length for later.
-    push af
     ld hl,NAME_TABLE_START        ; Get ready to calculate destination address.
     ld a,b
     cp 0
@@ -213,15 +212,16 @@
     or VRAM_WRITE_COMMAND
     out (CONTROL_PORT),a
     ;
-    pop af                          ; Get string length from stack.
-    ld b,a                          ; Use in loop counter.
     pop hl                          ; Get pointer to string from stack.
     -:
       ld a,(hl)                     ; Get character from string.
+      cp STRING_TERMINATOR
+      ret z
       out (DATA_PORT),a             ; Write it to name table.
       ld a,%00001000                ; Select sprite palette for this char.
       out (DATA_PORT),a             ; Write 2nd byte to name table.
       inc hl                        ; Point to next char.
     djnz -
   ret
+
 .ends

@@ -61,19 +61,37 @@
   prepare_devmenu:
     ; Display menu text
     ld hl,menu_title
-    ld a,17
     ld b,4
     ld c,7
     call print
-
-
     ; Item 1.
     ld hl,item_1
-    ld a,11
     ld b,6
     ld c,10
     call print
-
+    ; Item 2.
+    ld hl,item_2
+    ld a,6
+    ld b,8
+    ld c,10
+    call print
+    ; Item 2.
+    ld hl,item_3
+    ld b,10
+    ld c,10
+    call print
+    ; Menu footer.
+    ld hl,menu_footer
+    ld b,18
+    ld c,7
+    call print
+    ;
+    ; Borrow sprite sheet from Copenhagen mode.
+    SELECT_BANK COPENHAGEN_BANK
+    ld bc,copenhagen_tiles_end-copenhagen_tiles
+    ld de,$0e00                             ; Address of tile nr. 128 - 16
+    ld hl,copenhagen_tiles                  ; This will load 127 tiles to the
+    call load_vram                          ; first bank and 127 to the second.
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -85,14 +103,30 @@
   jp main_loop
   ; Menu item strings:
   menu_title:
-    .asc "Swabby debug menu"
+    .asc "Swabby debug menu#"
   item_1:
-    .asc "Menu item 1"
+    .asc "Title screen#"
   item_2:
+    .asc "Low Res#"
   item_3:
+    .asc "Hi Res#"
+  menu_footer:
+    .asc "*Start* This menu#"
   ;
   run_devmenu:
     ;
+    call await_frame_interrupt
+    call load_sat
+    ;
+    ; update()
+    call get_input_ports
+    ; TODO: Add menu state machine.
+    call begin_sprites
+    ld a,3
+    ld b,46
+    ld c,70
+    call add_sprite
+
   jp main_loop
   ;
   prepare_copenhagen:
