@@ -23,6 +23,9 @@
 .equ SAT_XC_START SAT_Y_START+64+64
 .equ SPRITE_TERMINATOR $d0
 
+.equ SYSTEM_CONTROL_PORT $00  ; GG: start, region, ntsc/pal
+.equ START_BUTTON_BIT %10000000 ; 0 = Switch is on!
+
 .equ V_COUNTER_PORT $7e
 .equ CONTROL_PORT $BF
 .equ DATA_PORT $BE
@@ -159,6 +162,7 @@
 ; -----------------------------------------------------------------------------
 .section "Boot" force
 ; -----------------------------------------------------------------------------
+  boot:
   di
   im 1
   ld sp,STACK_INIT_ADDRESS
@@ -476,78 +480,13 @@
   ret               ; Return with carry flag set.
 .ends
 
-; -----------------------------------------------------------------------------
-.section "IsPlayer2Button1Pressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2Button1Pressed:
-    ld a,(InputPorts+1)
-    and %00000100
-    ret nz            ; Return with carry flag reset
-    scf
-  ret                 ; Return with carry flag set.
-.ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer2Button2Pressed" free
+.section "is_start_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer2Button2Pressed:
-    ld a,(InputPorts+1)
-    and %00001000
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsPlayer2DownPressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2DownPressed:
-    ld a,(InputPorts)
-    and %10000000
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsPlayer2LeftPressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2LeftPressed:
-    ld a,(InputPorts+1)
-    and %00000001
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsPlayer2RightPressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2RightPressed:
-    ld a,(InputPorts+1)
-    and %00000010
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsPlayer2UpPressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2UpPressed:
-    ld a,(InputPorts)
-    and %01000000
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsResetPressed" free
-; -----------------------------------------------------------------------------
-  IsResetPressed:
-    ld a,(InputPorts+1)
-    and %00010000
+  is_start_pressed:
+    in a,(SYSTEM_CONTROL_PORT)
+    and START_BUTTON_BIT
     ret nz          ; Return with carry flag reset
     scf
   ret               ; Return with carry flag set.

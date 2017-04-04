@@ -152,6 +152,29 @@
           xor a
           ld (menu_timer),a
       switch_menu_up_end:
+      ; Check button 1 and 2 to see if user clicks menu item.
+      call is_button_1_pressed
+      jp c,handle_menu_click
+      call is_button_2_pressed
+      jp c,handle_menu_click
+      jp menu_end
+      ;
+      handle_menu_click:
+        ld hl,menu_state_to_game_state
+        ld a,(menu_state)
+        ld d,0
+        ld e,a
+        add hl,de
+        ld a,(hl)
+        ld (game_state),a
+        di
+        ld a,DISPLAY_0_FRAME_0_SIZE_0
+        ld b,1
+        call set_register
+      jp main_loop
+      menu_state_to_game_state:
+        .db 1, 5, 7
+      ;
     menu_end:
     ; Place menu sprite
     call begin_sprites
@@ -219,7 +242,7 @@
     ld (game_state),a
   jp main_loop
   my_string:
-    .asc "SWABBY!"
+    .asc "SWABBY!#"
   ;
   ; ---------------------------------------------------------------------------
   run_copenhagen:
@@ -289,6 +312,14 @@
       dec d
     jp nz,-
     ;
+    ; Check for start button press
+    call is_start_pressed
+    jp nc,main_loop
+      di
+      ld a,DISPLAY_0_FRAME_0_SIZE_0
+      ld b,1
+      call set_register
+      jp boot
   jp main_loop
   swabby_table:
     ; Table to control Swabby meta sprite (y,x,charnum... repeat)

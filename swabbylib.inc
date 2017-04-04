@@ -136,6 +136,11 @@
     ld de,$0e00                             ; Address of tile nr. 128 - 16
     ld hl,sandbox_tiles                     ; This will load 127 tiles to the
     call load_vram                          ; first bank and 127 to the second.
+    ; Make the playfield black!
+    ld hl,NAME_TABLE_START
+    ld a,32
+    ld b,28
+    call blank_tilemap_rect
     ; Initialize the variables.
     ld a,SWABBY_Y_INIT
     ld (swabby_y),a
@@ -366,7 +371,7 @@
     ; 1. See if it is time to activate a new demon (two tests).
     ld hl,active_demons_timer       ; Get the timer.
     call inc_word                   ; Increment it.
-    ld bc,700                       ; See if we should activate another demon.
+    ld bc,400                       ; See if we should activate another demon.
     call cp_word                    ; Word compare.
     jp nz,activate_demon_end        ; Skip forward if timer is not yet 700.
       ; Passed first test (timer); prepare second test (# active demons).
@@ -584,6 +589,14 @@
     call PSGFrame
     call PSGSFXFrame
     ; -------------------------------------------------------------------------
+    ; Check for start button press
+    call is_start_pressed
+    jp nc,main_loop
+      di
+      ld a,DISPLAY_0_FRAME_0_SIZE_0
+      ld b,1
+      call set_register
+      jp boot
   ; End of main loop.
   jp main_loop
 .ends
@@ -672,6 +685,7 @@
   ; ---------------------------------------------------------------------------
   run_titlescreen:
     call await_frame_interrupt
+    call load_sat
     ; Decrement blinker_timer and reset to BLINKER_DURATION if it reaches 0.
     ld a,(blinker_timer)
     dec a
@@ -701,5 +715,14 @@
     ; Non-VBlank stuff goes here...
     ld hl,frame_counter
     inc (hl)
+    call begin_sprites  ; Actually just to get rid of SAT junk!
+    ; Check for start button press
+    call is_start_pressed
+    jp nc,main_loop
+      di
+      ld a,DISPLAY_0_FRAME_0_SIZE_0
+      ld b,1
+      call set_register
+      jp boot
   jp main_loop
 .ends

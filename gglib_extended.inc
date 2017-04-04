@@ -225,3 +225,81 @@
   ret
 
 .ends
+
+
+; -----------------------------------------------------------------------------
+.section "IsPlayer2DownPressed" free
+; -----------------------------------------------------------------------------
+  IsPlayer2DownPressed:
+    ld a,(InputPorts)
+    and %10000000
+    ret nz          ; Return with carry flag reset
+    scf
+  ret               ; Return with carry flag set.
+.ends
+
+; -----------------------------------------------------------------------------
+.section "IsPlayer2LeftPressed" free
+; -----------------------------------------------------------------------------
+  IsPlayer2LeftPressed:
+    ld a,(InputPorts+1)
+    and %00000001
+    ret nz          ; Return with carry flag reset
+    scf
+  ret               ; Return with carry flag set.
+.ends
+
+; -----------------------------------------------------------------------------
+.section "IsPlayer2RightPressed" free
+; -----------------------------------------------------------------------------
+  IsPlayer2RightPressed:
+    ld a,(InputPorts+1)
+    and %00000010
+    ret nz          ; Return with carry flag reset
+    scf
+  ret               ; Return with carry flag set.
+.ends
+
+; -----------------------------------------------------------------------------
+.section "IsPlayer2UpPressed" free
+; -----------------------------------------------------------------------------
+  IsPlayer2UpPressed:
+    ld a,(InputPorts)
+    and %01000000
+    ret nz          ; Return with carry flag reset
+    scf
+  ret               ; Return with carry flag set.
+.ends
+
+; -----------------------------------------------------------------------------
+.section "IsResetPressed" free
+; -----------------------------------------------------------------------------
+  IsResetPressed:
+    ld a,(InputPorts+1)
+    and %00010000
+    ret nz          ; Return with carry flag reset
+    scf
+  ret               ; Return with carry flag set.
+.ends
+
+; -----------------------------------------------------------------------------
+.section "IsPlayer2Button1Pressed" free
+; -----------------------------------------------------------------------------
+  IsPlayer2Button1Pressed:
+    ld a,(InputPorts+1)
+    and %00000100
+    ret nz            ; Return with carry flag reset
+    scf
+  ret                 ; Return with carry flag set.
+.ends
+
+; -----------------------------------------------------------------------------
+.section "IsPlayer2Button2Pressed" free
+; -----------------------------------------------------------------------------
+  IsPlayer2Button2Pressed:
+    ld a,(InputPorts+1)
+    and %00001000
+    ret nz          ; Return with carry flag reset
+    scf
+  ret               ; Return with carry flag set.
+.ends
