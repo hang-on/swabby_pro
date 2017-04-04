@@ -125,16 +125,16 @@
     ; update()
     call get_input_ports
     ;
-    ld a,(menu_timer)
-    cp MENU_DELAY
-    jp z,+
-      inc a
-      ld (menu_timer),a
+    ld a,(menu_timer)                 ; If menu timer is up, then go on to
+    cp MENU_DELAY                     ; check for keypresses. Otherwise, just
+    jp z,+                            ; inc the timer (this timer goes from
+      inc a                           ; 0 to MENU_DELAY) and stops there.
+      ld (menu_timer),a               ; It is about anti-bouncing!
       jp menu_end
     +:
-      call IsPlayer1DownPressed
-      jp nc,switch_menu_down_end
-        ld a,(menu_state)
+      call IsPlayer1DownPressed       ; Move selector downwards if player
+      jp nc,switch_menu_down_end      ; presses down. menu_state is the menu
+        ld a,(menu_state)             ; item currently 'under' the selector.
         cp MENU_MAX
         jp z,switch_menu_down_end
           inc a
@@ -142,7 +142,7 @@
           xor a
           ld (menu_timer),a
       switch_menu_down_end:
-      call IsPlayer1UpPressed
+      call IsPlayer1UpPressed         ; Move selector up, on dpad=up....
       jp nc,switch_menu_up_end
         ld a,(menu_state)
         cp MENU_MIN
@@ -166,13 +166,13 @@
         ld e,a
         add hl,de
         ld a,(hl)
-        ld (game_state),a
-        di
-        ld a,DISPLAY_0_FRAME_0_SIZE_0
-        ld b,1
-        call set_register
+        ld (game_state),a                 ; Load game state for next loop,
+        di                                ; based on menu item. Also disable
+        ld a,DISPLAY_0_FRAME_0_SIZE_0     ; interrupts and turn screen off
+        ld b,1                            ; so preparations of next mode are
+        call set_register                 ; safely done.
       jp main_loop
-      menu_state_to_game_state:
+      menu_state_to_game_state:           ; menu_item(0) == game_state(1), etc. 
         .db 1, 5, 7
       ;
     menu_end:
