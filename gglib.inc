@@ -1,12 +1,11 @@
 ; gglib_base.inc - GG project boilerplate and standard library.
-; Latest revision: Winter 2016/2017 for project swabby_pro.
+; Latest revision: Spring 2016/2017 for project swabby_pro.
 
 ; *****************************************************************************
 ;                              BASE LIBRARY
 ; *****************************************************************************
 .equ ROMSIZE 128                      ; Make a 128k or 256k rom.
 .equ INCLUDE_VDP_INTERRUPT_HANDLER    ; Comment out to exclude it.
-.equ INCLUDE_PAUSE_BUTTON_HANDLER     ; Comment out to exclude it.
 
 ; -----------------------------------------------------------------------------
 ; HARDWARE DEFINITIONS
@@ -23,8 +22,8 @@
 .equ SAT_XC_START SAT_Y_START+64+64
 .equ SPRITE_TERMINATOR $d0
 
-.equ SYSTEM_CONTROL_PORT $00  ; GG: start, region, ntsc/pal
-.equ START_BUTTON_BIT %10000000 ; 0 = Switch is on!
+.equ SYSTEM_CONTROL_PORT $00          ; GG: start, region, ntsc/pal.
+.equ START_BUTTON_BIT %10000000       ; 0 = Switch is on!
 
 .equ V_COUNTER_PORT $7e
 .equ CONTROL_PORT $BF
@@ -60,9 +59,6 @@
 
 .equ INPUT_PORT_1 $dc
 .equ INPUT_PORT_2 $dd
-
-.equ PAUSE_FLAG_RESET $00
-.equ PAUSE_FLAG_SET $ff
 
 .equ LCD_RIGHT_BORDER (6*8)+(20*8)
 .equ LCD_LEFT_BORDER 6*8
@@ -435,7 +431,6 @@
     scf
   ret               ; Return with carry flag set.
 .ends
-
 ; -----------------------------------------------------------------------------
 .section "IsPlayer1DownPressed" free
 ; -----------------------------------------------------------------------------
@@ -582,3 +577,11 @@
     out (CONTROL_PORT),a
   ret
 .ends
+
+
+; -----------------------------------------------------------------------------
+; Legacy code (for SMS).
+
+; .equ INCLUDE_PAUSE_BUTTON_HANDLER     ; Comment out to exclude it.
+; .equ PAUSE_FLAG_RESET $00
+; .equ PAUSE_FLAG_SET $ff

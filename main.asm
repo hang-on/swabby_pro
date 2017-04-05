@@ -172,7 +172,7 @@
         ld b,1                            ; so preparations of next mode are
         call set_register                 ; safely done.
       jp main_loop
-      menu_state_to_game_state:           ; menu_item(0) == game_state(1), etc. 
+      menu_state_to_game_state:           ; menu_item(0) == game_state(1), etc.
         .db 1, 5, 7
       ;
     menu_end:
@@ -295,7 +295,13 @@
       +:
     swabby_moving_end:
     call begin_sprites
-    ld hl,swabby_table
+    call is_dpad_pressed
+    jp nc,+
+      ld hl,swabby_flying_table
+      jp ++
+    +:
+      ld hl,swabby_idle_table
+    ++:
     ld d,9
     -:
       ld a,(swabby_y)
@@ -321,11 +327,16 @@
       call set_register
       jp boot
   jp main_loop
-  swabby_table:
+  swabby_idle_table:
     ; Table to control Swabby meta sprite (y,x,charnum... repeat)
     .db 0, 0, 0, 0, 8, 1, 0, 16, 2
     .db 8, 0, 16, 8, 8, 17, 8, 16, 18
     .db 16, 0, 32, 16, 8, 33, 16, 16, 34
+  swabby_flying_table:
+  .db 0, 0, 48, 0, 8, 49, 0, 16, 50
+  .db 8, 0, 64, 8, 8, 65, 8, 16, 66
+  .db 16, 0, 80, 16, 8, 81, 16, 16, 82
+
 .ends
 ;
 .bank 1 slot 1
@@ -379,7 +390,7 @@
 .section "Copenhagen mode assets" free
 ; -----------------------------------------------------------------------------
   copenhagen_tiles:
-    .include "bank_5\spritesheet.png_tiles.inc"
+    .include "bank_5\spritesheet3.png_tiles.inc"
   copenhagen_tiles_end:
 .ends
 ;

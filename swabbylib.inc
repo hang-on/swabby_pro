@@ -502,6 +502,7 @@
       jp nz,sleeping_state_end
         ; If demon is asleep, see if we should wake it up.
         call get_random_number      ; Get random number 0-255 in A.
+        and %00001111               ; Adjust for higher chance <<
         cp 1                        ; If rnd = 1 then wake this demon.
         jp nz,sleeping_state_end    ; Else just skip forward.
           ; -------------------------------------------------------------------
