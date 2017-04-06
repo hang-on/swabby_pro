@@ -72,6 +72,7 @@
   extram_header dw                ; Points inside the external ram.
   ;
   blinker_timer db                ; The speed of the titlesreen blinker.
+  music_toggle db
   ;
   temp_byte db
   temp_word dw

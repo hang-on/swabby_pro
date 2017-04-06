@@ -593,6 +593,7 @@
     ; Check for start button press
     call is_start_pressed
     jp nc,main_loop
+      call kill_psg
       di
       ld a,DISPLAY_0_FRAME_0_SIZE_0
       ld b,1
@@ -672,6 +673,23 @@
     ; Start timer.
     ld a,BLINKER_DURATION
     ld (blinker_timer),a
+    SELECT_EXTRAM
+    ld a,(EXTRAM_START)         ; OK, cheap and dirty. We save a counter in the
+    SELECT_ROM                  ; first byte of external ram. This counter is
+    SELECT_BANK SOUND_BANK      ; incremented per title screen prep. Alternate
+    bit 0,a                     ; intro tunes on odd/even numbers...
+    jp z,+
+      ld hl,intro_tune_1
+      jp ++
+    +:
+      ld hl,intro_tune_2
+    ++:
+    call PSGPlay
+    SELECT_EXTRAM
+    ld hl,EXTRAM_START
+    inc (hl)
+    SELECT_ROM
+    SELECT_BANK TITLESCREEN_BANK
     ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
@@ -716,10 +734,16 @@
     ; Non-VBlank stuff goes here...
     ld hl,frame_counter
     inc (hl)
+    SELECT_BANK SOUND_BANK
+    call PSGFrame
+    SELECT_BANK TITLESCREEN_BANK
     call begin_sprites  ; Actually just to get rid of SAT junk!
     ; Check for start button press
     call is_start_pressed
     jp nc,main_loop
+      ; Kill sound
+      call PSGStop
+      ; Get ready to boot.
       di
       ld a,DISPLAY_0_FRAME_0_SIZE_0
       ld b,1

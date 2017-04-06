@@ -25,6 +25,7 @@
 .equ SYSTEM_CONTROL_PORT $00          ; GG: start, region, ntsc/pal.
 .equ START_BUTTON_BIT %10000000       ; 0 = Switch is on!
 
+.equ PSG_PORT $7f
 .equ V_COUNTER_PORT $7e
 .equ CONTROL_PORT $BF
 .equ DATA_PORT $BE
@@ -81,24 +82,30 @@
 ; -----------------------------------------------------------------------------
 .macro SELECT_EXTRAM
 ; -----------------------------------------------------------------------------
+  push af
   ld a,(BANK_CONTROL)
   or SET_EXTRAM_BIT
   ld (BANK_CONTROL),a
+  pop af
 .endm
 ; -----------------------------------------------------------------------------
 .macro SELECT_ROM
 ; -----------------------------------------------------------------------------
+  push af
   ld a,(BANK_CONTROL)
   and RESET_EXTRAM_BIT
   ld (BANK_CONTROL),a
+  pop af
 .endm
 ; -----------------------------------------------------------------------------
 .macro SELECT_BANK
 ; -----------------------------------------------------------------------------
   ; Select a bank for slot 2, i.e. SELECT_BANK 4.
   ; Uses: A.
+  push af
   ld a,\1
   ld (SLOT_2_CONTROL),a
+  pop af
 .endm
 ; -----------------------------------------------------------------------------
 .macro SAVE_REGISTERS
@@ -485,6 +492,22 @@
     ret nz          ; Return with carry flag reset
     scf
   ret               ; Return with carry flag set.
+.ends
+
+; -----------------------------------------------------------------------------
+.section "kill_psg" free
+; -----------------------------------------------------------------------------
+  ; Manually silence all sound.
+  kill_psg:
+    push af
+    ld a,$9f
+    out (PSG_PORT),a
+    ld a,$bf
+    out (PSG_PORT),a
+    ld a,$df
+    out (PSG_PORT),a
+    pop af
+  ret
 .ends
 
 ; -----------------------------------------------------------------------------

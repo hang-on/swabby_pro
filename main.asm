@@ -59,6 +59,7 @@
   ;
   ; ---------------------------------------------------------------------------
   prepare_devmenu:
+
     ; Display menu text
     ld hl,menu_title
     ld b,4
@@ -96,6 +97,7 @@
     xor a
     ld (menu_state),a
     ld (menu_timer),a
+    ;
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -383,6 +385,10 @@
     .incbin "bank_4\shot_1.psg"
   demon_attack:
     .incbin "bank_4\demon_attack.psg"
+  intro_tune_1:
+  .incbin "bank_4\swabby_pro_intro.psg"
+  intro_tune_2:
+  .incbin "bank_4\swabby_pro_intro_2.psg"
 .ends
 ;
 .bank COPENHAGEN_BANK slot 2
