@@ -10,21 +10,26 @@
 ; -----------------------------------------------------------------------------
 ; HARDWARE DEFINITIONS
 ; -----------------------------------------------------------------------------
+; Video memory and initialization:
 .equ NAME_TABLE_START $3800
 .equ NAME_TABLE_SIZE 2*32*24          ; The whole 'effective area' (SMS/TV).
 .equ SPRITE_BANK_START $2000
 .equ BACKGROUND_BANK_START $0000
-
 .equ SPRITE_PALETTE_START 16
 .equ BACKGROUND_PALETTE_START 0
-
 .equ SAT_Y_START $3f00
 .equ SAT_XC_START SAT_Y_START+64+64
 .equ SPRITE_TERMINATOR $d0
 
+; Memory map and initialization:
+.equ RAM_START $c000
+.equ STACK_INIT_ADDRESS $dff0
+
+; Port communication and control:
 .equ SYSTEM_CONTROL_PORT $00          ; GG: start, region, ntsc/pal.
 .equ START_BUTTON_BIT %10000000       ; 0 = Switch is on!
-
+.equ INPUT_PORT_1 $dc
+.equ INPUT_PORT_2 $dd
 .equ PSG_PORT $7f
 .equ V_COUNTER_PORT $7e
 .equ CONTROL_PORT $BF
@@ -34,33 +39,28 @@
 .equ REGISTER_WRITE_COMMAND %10000000
 .equ CRAM_WRITE_COMMAND %11000000
 
+; Register 0 settings:
 .equ SCROLL_0_LINE_0_SPRITES_0 %00000110
+
+; Register 1 settings:
 .equ DISPLAY_1_FRAME_1_SIZE_0 %11100000
 .equ DISPLAY_0_FRAME_1_SIZE_0 %10100000
 .equ DISPLAY_0_FRAME_0_SIZE_0 %10000000
 .equ DISPLAY_1_FRAME_1_SIZE_0_ZOOM %11100001
 
-
-.equ NO_OFFSET_SELECT_RAM %00001000
-.equ NO_OFFSET_SELECT_ROM %00000000
-.equ SET_EXTRAM_BIT %00001000
-.equ RESET_EXTRAM_BIT %11110111
-
-.equ EXTRAM_START $8000
-.equ EXTRAM_SIZE $4000
-
 .equ HORIZONTAL_SCROLL_REGISTER 8
 .equ VERTICAL_SCROLL_REGISTER 9
 .equ RASTER_INTERRUPT_REGISTER 10
 
+; Banks / ROM / External RAM control:
+.equ SET_EXTRAM_BIT %00001000
+.equ RESET_EXTRAM_BIT %11110111
+.equ EXTRAM_START $8000
+.equ EXTRAM_SIZE $4000
 .equ SLOT_2_CONTROL $ffff
 .equ BANK_CONTROL $fffc
-.equ STACK_INIT_ADDRESS $dff0
-.equ RAM_START $c000
 
-.equ INPUT_PORT_1 $dc
-.equ INPUT_PORT_2 $dd
-
+; LCD screen values:
 .equ LCD_RIGHT_BORDER (6*8)+(20*8)
 .equ LCD_LEFT_BORDER 6*8
 .equ LCD_TOP_BORDER 3*8
@@ -75,13 +75,15 @@
 .equ ENABLED $ff
 .equ DISABLED 0
 
-
 ; =============================================================================
 ; M A C R O S
 ; =============================================================================
 ; -----------------------------------------------------------------------------
 .macro SELECT_EXTRAM
 ; -----------------------------------------------------------------------------
+  ; Select external RAM: Now memory addresses from $8000 - $c000 (slot 2)
+  ; are mapped to the battery-backed RAM, and thus its contents are saved
+  ; between sessions.
   push af
   ld a,(BANK_CONTROL)
   or SET_EXTRAM_BIT
@@ -91,6 +93,8 @@
 ; -----------------------------------------------------------------------------
 .macro SELECT_ROM
 ; -----------------------------------------------------------------------------
+  ; Select ROM: Used to switch mapping in slot 2 ($8000 - $c000) back to ROM
+  ; if external RAM was selected.
   push af
   ld a,(BANK_CONTROL)
   and RESET_EXTRAM_BIT
@@ -101,7 +105,6 @@
 .macro SELECT_BANK
 ; -----------------------------------------------------------------------------
   ; Select a bank for slot 2, i.e. SELECT_BANK 4.
-  ; Uses: A.
   push af
   ld a,\1
   ld (SLOT_2_CONTROL),a
@@ -498,6 +501,8 @@
 .section "kill_psg" free
 ; -----------------------------------------------------------------------------
   ; Manually silence all sound.
+  ; Entry: None.
+  ; Saves registers used.
   kill_psg:
     push af
     ld a,$9f
