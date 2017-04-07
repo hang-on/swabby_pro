@@ -3,26 +3,13 @@
 ;
 .equ ONE_TILEMAP_ROW 32*2
 .equ END_OF_TABLE $ff
+.equ ASCII_ZERO 16        ; Where in the tilebank is the ASCII zero?
 
 ; -----------------------------------------------------------------------------
-.section "vdp_registers" free
+.ramsection "gglib_extended_vars" slot 3
 ; -----------------------------------------------------------------------------
-  load_vdp_registers:
-    ; Load all 11 vdp registers with preset values.
-    ; Entry: HL pointing to init data block (11 bytes).
-    xor b
-    -:
-      ld a,(hl)
-      out (CONTROL_PORT),a
-      inc hl
-      ld a,b
-      or REGISTER_WRITE_COMMAND
-      out (CONTROL_PORT),a
-      cp REGISTER_WRITE_COMMAND|10
-      ret z
-      inc b
-    jr -
-  ret
+  cursor_y db
+  cursor_x db
 .ends
 
 ; -----------------------------------------------------------------------------
@@ -181,7 +168,7 @@
 .section "Printing" free
 ; -----------------------------------------------------------------------------
   print:
-    ; Print a string to the name table. Terminate with #
+    ; Print a string to the name table. Terminate with # (ascii).
     ; N.B. Make sure that this function is not interrupted!
     ; Entry:
     ;        B = row, C = column.
@@ -224,82 +211,98 @@
     djnz -
   ret
 
-.ends
+  set_cursor:
+    ; Set cursor used by put_char.
+    ; Entry: A = cursor_y / row, B = cursor_x / column.
+    ld (cursor_y),a
+    ld a,b
+    ld (cursor_x),a
+  ret
 
+  put_char:
+    ; Put char at cursor y,x and move cursor right.
+    ; N.B. Make sure that this function is not interrupted!
+    ; Entry: A = tile number (0-255 - in tile bank 1).
+    ; Uses: A, B and C, but saves the rest.
+    SAVE_REGISTERS
+    push af                       ;
+    ld hl,NAME_TABLE_START        ; Get ready to calculate destination address.
+    ld a,(cursor_y)
+    ld b,a
+    cp 0
+    jp z,+
+      ld de,$40                   ; For each row, add $40 to the dest. address.
+      -:
+        add hl,de
+      djnz -
+    +:
+    ld a,(cursor_x)
+    cp 0
+    jp z,+
+      ld b,a
+      ld de,2                     ; Each column adds 1 word to dest. address.
+      -:
+        add hl,de
+      djnz -
+    +:
+    inc a
+    ld (cursor_x),a               ; Inc cursor x position.
+    ld a,l                        ; Setup vram to load bytes at dest. address.
+    out (CONTROL_PORT),a
+    ld a,h
+    or VRAM_WRITE_COMMAND
+    out (CONTROL_PORT),a
+    ;
+    pop af                        ; Get tile.
+    out (DATA_PORT),a             ; Write it to name table.
+    ld a,%00001000                ; Select sprite palette for this char.
+    out (DATA_PORT),a             ; Write 2nd byte to name table.
+  RESTORE_REGISTERS
+  ret
 
-; -----------------------------------------------------------------------------
-.section "IsPlayer2DownPressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2DownPressed:
-    ld a,(InputPorts)
-    and %10000000
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
+  print_register_hl:
+    ; Print the contents of register HL as 5 ascii digits using put_char at
+    ; position cursor (y,x).
+    ; Entry: HL = value to print.
+    ; Uses AF, BC, HL
+  	ld	bc,-10000
+  	call	+
+  	ld	bc,-1000
+  	call	+
+    ld	bc,-100
+  	call	+
+  	ld	c,-10
+  	call +
+  	ld	c,-1
+    +:
+      ld	a,ASCII_ZERO-1 ; Maybe 16 here?
+      -:
+        inc	a
+  	    add	hl,bc
+  	  jr	c,-
+  	sbc	hl,bc
+  	call put_char
+  ret
 
-; -----------------------------------------------------------------------------
-.section "IsPlayer2LeftPressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2LeftPressed:
-    ld a,(InputPorts+1)
-    and %00000001
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsPlayer2RightPressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2RightPressed:
-    ld a,(InputPorts+1)
-    and %00000010
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsPlayer2UpPressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2UpPressed:
-    ld a,(InputPorts)
-    and %01000000
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsResetPressed" free
-; -----------------------------------------------------------------------------
-  IsResetPressed:
-    ld a,(InputPorts+1)
-    and %00010000
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsPlayer2Button1Pressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2Button1Pressed:
-    ld a,(InputPorts+1)
-    and %00000100
-    ret nz            ; Return with carry flag reset
-    scf
-  ret                 ; Return with carry flag set.
-.ends
-
-; -----------------------------------------------------------------------------
-.section "IsPlayer2Button2Pressed" free
-; -----------------------------------------------------------------------------
-  IsPlayer2Button2Pressed:
-    ld a,(InputPorts+1)
-    and %00001000
-    ret nz          ; Return with carry flag reset
-    scf
-  ret               ; Return with carry flag set.
+  print_register_a:
+    ; Print the contents of register A as 3 ascii digits using put_char at
+    ; position cursor (y,x).
+    ; Entry: A = value to print.
+    ; Uses AF, BC, HL
+    ld h,0
+    ld l,a
+    ld	bc,-100
+  	call	+
+  	ld	c,-10
+  	call +
+  	ld	c,-1
+    +:
+      ld	a,ASCII_ZERO-1 ;
+      -:
+        inc	a
+  	    add	hl,bc
+  	  jr	c,-
+  	sbc	hl,bc
+  	call put_char
+  ret
 .ends

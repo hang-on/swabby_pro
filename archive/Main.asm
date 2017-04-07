@@ -63,7 +63,7 @@
     call AwaitFrameInterrupt
     call LoadSAT
 
-    call GetInputPorts
+    call Getinput_ports
 
     call ProcessWaveScript
     call RunWaveMaker

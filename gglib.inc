@@ -113,6 +113,7 @@
 ; -----------------------------------------------------------------------------
 .macro SAVE_REGISTERS
 ; -----------------------------------------------------------------------------
+  ; Save all registers, except IX and IY
   push af
   push bc
   push de
@@ -121,13 +122,12 @@
 ; -----------------------------------------------------------------------------
 .macro RESTORE_REGISTERS
 ; -----------------------------------------------------------------------------
+  ; Restore all registers, except IX and IY
   pop hl
   pop de
   pop bc
   pop af
 .endm
-
-
 
 ; -----------------------------------------------------------------------------
 .memorymap
@@ -158,9 +158,9 @@
 ; -----------------------------------------------------------------------------
 .ramsection "Global Variables" slot 3
 ; -----------------------------------------------------------------------------
-  VDPStatus db    ; Set by the VDP interrupt handler and AwaitFrameInterrupt.
-  PauseFlag db    ; Toggled by the pause button interrupt handler.
-  InputPorts dw
+  VDPStatus db
+  input_ports dw
+  rnd_generator_word dw   ; Used by the random number generator.
 .ends
 
 .org 0
@@ -327,15 +327,84 @@
 .ends
 
 ; -----------------------------------------------------------------------------
+.section "dec_table_item" free
+; -----------------------------------------------------------------------------
+  dec_table_item:
+    ; Decrement a byte-sized table item.
+    ; Entry: A = index, HL = Pointer to table.
+    ; Exit: None.
+    ; Preserves all registers.
+    push de
+    push hl
+    ld d,0
+    ld e,a
+    add hl,de
+    dec (hl)
+    pop hl
+    pop de
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
 .section "get_input_ports" free
 ; -----------------------------------------------------------------------------
-  ; Set InputPorts (word) to mirror current state of ports $dc and $dd.
+  ; Set input_ports (word) to mirror current state of ports $dc and $dd.
   ; Uses: AF
   get_input_ports:
     in a,(INPUT_PORT_1)
-    ld (InputPorts),a
+    ld (input_ports),a
     in a,(INPUT_PORT_2)
-    ld (InputPorts+1),a
+    ld (input_ports+1),a
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
+.section "get_random_number" free
+; -----------------------------------------------------------------------------
+  get_random_number:
+    ; Uses a 16-bit RAM variable called rnd_generator_word
+    ; Returns an 8-bit pseudo-random number in A
+    push hl
+      ld hl,(rnd_generator_word)
+      ld a,h         ; get high byte
+      rrca           ; rotate right by 2
+      rrca
+      xor h          ; xor with original
+      rrca           ; rotate right by 1
+      xor l          ; xor with low byte
+      rrca           ; rotate right by 4
+      rrca
+      rrca
+      rrca
+      xor l          ; xor again
+      rra            ; rotate right by 1 through carry
+      adc hl,hl      ; add rnd_generator_word to itself
+      jr nz,+
+        ld hl,$733c   ; if last xor resulted in zero then re-seed.
+      +:
+      ld a,r         ; r = refresh register = semi-random number
+      xor l          ; xor with l which is fairly random
+      ld (rnd_generator_word),hl
+    pop hl
+  ret                ; return random number in a
+.ends
+
+; -----------------------------------------------------------------------------
+.section "get_table_item" free
+; -----------------------------------------------------------------------------
+  get_table_item:
+    ; Gets the byte at index [in A] in table [pointer in HL].
+    ; Entry: A = Index, HL = Poiner to table
+    ; Exit: Byte in A.
+    ; Preserves all registers.
+    push de
+    push hl
+    ld d,0
+    ld e,a
+    add hl,de
+    ld a,(hl)
+    pop hl
+    pop de
   ret
 .ends
 
@@ -378,7 +447,24 @@
   ret
 .ends
 
-
+; -----------------------------------------------------------------------------
+.section "inc_table_item" free
+; -----------------------------------------------------------------------------
+  inc_table_item:
+    ; Increments a byte-sized table item.
+    ; Entry: A = index, HL = Pointer to table.
+    ; Exit: None.
+    ; Preserves all registers.
+    push de
+    push hl
+    ld d,0
+    ld e,a
+    add hl,de
+    inc (hl)
+    pop hl
+    pop de
+  ret
+.ends
 
 ; -----------------------------------------------------------------------------
 .section "InitializeVDPRegisters" free
@@ -410,7 +496,7 @@
 .section "is_dpad_pressed" free
 ; -----------------------------------------------------------------------------
   is_dpad_pressed:
-    ld a,(InputPorts)
+    ld a,(input_ports)
     and %00001111   ; Isolate the dpad bits.
     cpl             ; Invert bits; now 1 = keypress!
     and %00001111   ; Get rid of garbage from cpl in last four bits.
@@ -424,7 +510,7 @@
 .section "is_button_1_pressed" free
 ; -----------------------------------------------------------------------------
   is_button_1_pressed:
-    ld a,(InputPorts)
+    ld a,(input_ports)
     and %00010000
     ret nz            ; Return with carry flag reset
     scf
@@ -435,17 +521,17 @@
 .section "is_button_2_pressed" free
 ; -----------------------------------------------------------------------------
   is_button_2_pressed:
-    ld a,(InputPorts)
+    ld a,(input_ports)
     and %00100000
     ret nz          ; Return with carry flag reset
     scf
   ret               ; Return with carry flag set.
 .ends
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1DownPressed" free
+.section "is_down_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1DownPressed:
-    ld a,(InputPorts)
+  is_down_pressed:
+    ld a,(input_ports)
     and %00000010
     ret nz          ; Return with carry flag reset
     scf
@@ -453,10 +539,10 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1LeftPressed" free
+.section "is_left_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1LeftPressed:
-    ld a,(InputPorts)
+  is_left_pressed:
+    ld a,(input_ports)
     and %00000100
     ret nz          ; Return with carry flag reset
     scf
@@ -464,10 +550,10 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1RightPressed" free
+.section "is_right_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1RightPressed:
-    ld a,(InputPorts)
+  is_right_pressed:
+    ld a,(input_ports)
     and %00001000
     ret nz          ; Return with carry flag reset
     scf
@@ -475,10 +561,10 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1UpPressed" free
+.section "is_up_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1UpPressed:
-    ld a,(InputPorts)
+  is_up_pressed:
+    ld a,(input_ports)
     and %00000001
     ret nz          ; Return with carry flag reset
     scf
@@ -541,6 +627,27 @@
 .ends
 
 ; -----------------------------------------------------------------------------
+.section "load_vdp_registers" free
+; -----------------------------------------------------------------------------
+  load_vdp_registers:
+    ; Load all 11 vdp registers with preset values.
+    ; Entry: HL pointing to init data block (11 bytes).
+    xor b
+    -:
+      ld a,(hl)
+      out (CONTROL_PORT),a
+      inc hl
+      ld a,b
+      or REGISTER_WRITE_COMMAND
+      out (CONTROL_PORT),a
+      cp REGISTER_WRITE_COMMAND|10
+      ret z
+      inc b
+    jr -
+  ret
+.ends
+
+; -----------------------------------------------------------------------------
 .section "load_vram" free
 ; -----------------------------------------------------------------------------
   ; Load a number of bytes from a source address into vram.
@@ -592,7 +699,7 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "Set VDP Register" free
+.section "Set register (vdp)" free
 ; -----------------------------------------------------------------------------
   ; Write to target register.
   ; Entry: A = byte to be loaded into vdp register.
@@ -606,6 +713,24 @@
   ret
 .ends
 
+; -----------------------------------------------------------------------------
+.section "set_table_item" free
+; -----------------------------------------------------------------------------
+  set_table_item:
+    ; Set a byte at index [in A] in table [pointer in HL].
+    ; Entry: A = Index, B = value, HL = Poiner to table
+    ; Exit: None
+    ; Preserves all registers.
+    push de
+    push hl
+    ld d,0
+    ld e,a
+    add hl,de
+    ld (hl),b
+    pop hl
+    pop de
+  ret
+.ends
 
 ; -----------------------------------------------------------------------------
 ; Legacy code (for SMS).

@@ -72,7 +72,7 @@
 ; -----------------------------------------------------------------------------
   VDPStatus db    ; Set by the VDP interrupt handler and AwaitFrameInterrupt.
   PauseFlag db    ; Toggled by the pause button interrupt handler.
-  InputPorts dw
+  input_ports dw
 .ends
 
 .org 0
@@ -201,15 +201,15 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "GetInputPorts" free
+.section "Getinput_ports" free
 ; -----------------------------------------------------------------------------
-  ; Set InputPorts (word) to mirror current state of ports $dc and $dd.
+  ; Set input_ports (word) to mirror current state of ports $dc and $dd.
   ; Uses: AF
-  GetInputPorts:
+  Getinput_ports:
     in a,(INPUT_PORT_1)
-    ld (InputPorts),a
+    ld (input_ports),a
     in a,(INPUT_PORT_2)
-    ld (InputPorts+1),a
+    ld (input_ports+1),a
   ret
 .ends
 
@@ -243,7 +243,7 @@
 .section "IsPlayer1Button1Pressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer1Button1Pressed:
-    ld a,(InputPorts)
+    ld a,(input_ports)
     and %00010000
     ret nz            ; Return with carry flag reset
     scf
@@ -254,7 +254,7 @@
 .section "IsPlayer1Button2Pressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer1Button2Pressed:
-    ld a,(InputPorts)
+    ld a,(input_ports)
     and %00100000
     ret nz          ; Return with carry flag reset
     scf
@@ -262,10 +262,10 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1DownPressed" free
+.section "is_down_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1DownPressed:
-    ld a,(InputPorts)
+  is_down_pressed:
+    ld a,(input_ports)
     and %00000010
     ret nz          ; Return with carry flag reset
     scf
@@ -273,10 +273,10 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1LeftPressed" free
+.section "is_left_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1LeftPressed:
-    ld a,(InputPorts)
+  is_left_pressed:
+    ld a,(input_ports)
     and %00000100
     ret nz          ; Return with carry flag reset
     scf
@@ -284,10 +284,10 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1RightPressed" free
+.section "is_right_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1RightPressed:
-    ld a,(InputPorts)
+  is_right_pressed:
+    ld a,(input_ports)
     and %00001000
     ret nz          ; Return with carry flag reset
     scf
@@ -295,10 +295,10 @@
 .ends
 
 ; -----------------------------------------------------------------------------
-.section "IsPlayer1UpPressed" free
+.section "is_up_pressed" free
 ; -----------------------------------------------------------------------------
-  IsPlayer1UpPressed:
-    ld a,(InputPorts)
+  is_up_pressed:
+    ld a,(input_ports)
     and %00000001
     ret nz          ; Return with carry flag reset
     scf
@@ -309,7 +309,7 @@
 .section "IsPlayer2Button1Pressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer2Button1Pressed:
-    ld a,(InputPorts+1)
+    ld a,(input_ports+1)
     and %00000100
     ret nz            ; Return with carry flag reset
     scf
@@ -320,7 +320,7 @@
 .section "IsPlayer2Button2Pressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer2Button2Pressed:
-    ld a,(InputPorts+1)
+    ld a,(input_ports+1)
     and %00001000
     ret nz          ; Return with carry flag reset
     scf
@@ -331,7 +331,7 @@
 .section "IsPlayer2DownPressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer2DownPressed:
-    ld a,(InputPorts)
+    ld a,(input_ports)
     and %10000000
     ret nz          ; Return with carry flag reset
     scf
@@ -342,7 +342,7 @@
 .section "IsPlayer2LeftPressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer2LeftPressed:
-    ld a,(InputPorts+1)
+    ld a,(input_ports+1)
     and %00000001
     ret nz          ; Return with carry flag reset
     scf
@@ -353,7 +353,7 @@
 .section "IsPlayer2RightPressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer2RightPressed:
-    ld a,(InputPorts+1)
+    ld a,(input_ports+1)
     and %00000010
     ret nz          ; Return with carry flag reset
     scf
@@ -364,7 +364,7 @@
 .section "IsPlayer2UpPressed" free
 ; -----------------------------------------------------------------------------
   IsPlayer2UpPressed:
-    ld a,(InputPorts)
+    ld a,(input_ports)
     and %01000000
     ret nz          ; Return with carry flag reset
     scf
@@ -375,7 +375,7 @@
 .section "IsResetPressed" free
 ; -----------------------------------------------------------------------------
   IsResetPressed:
-    ld a,(InputPorts+1)
+    ld a,(input_ports+1)
     and %00010000
     ret nz          ; Return with carry flag reset
     scf

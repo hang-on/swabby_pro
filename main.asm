@@ -97,7 +97,17 @@
     xor a
     ld (menu_state),a
     ld (menu_timer),a
+    ; -------------------
+    ; Working area
+    ld a,16
+    ld b,12
+    call set_cursor
+    ld a,16
+    call print_register_a
+    ld hl,$ffff
+    call print_register_hl
     ;
+    ; ------------------------
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -134,7 +144,7 @@
       ld (menu_timer),a               ; It is about anti-bouncing!
       jp menu_end
     +:
-      call IsPlayer1DownPressed       ; Move selector downwards if player
+      call is_down_pressed       ; Move selector downwards if player
       jp nc,switch_menu_down_end      ; presses down. menu_state is the menu
         ld a,(menu_state)             ; item currently 'under' the selector.
         cp MENU_MAX
@@ -144,7 +154,7 @@
           xor a
           ld (menu_timer),a
       switch_menu_down_end:
-      call IsPlayer1UpPressed         ; Move selector up, on dpad=up....
+      call is_up_pressed         ; Move selector up, on dpad=up....
       jp nc,switch_menu_up_end
         ld a,(menu_state)
         cp MENU_MIN
@@ -275,22 +285,22 @@
         ld (swabby_state),a         ; out of move state, and back to idle.
         jp swabby_moving_end
       +:
-      call IsPlayer1RightPressed
+      call is_right_pressed
       jp nc,+
         ld hl,swabby_x
         inc (hl)
       +:
-      call IsPlayer1LeftPressed
+      call is_left_pressed
       jp nc,+
         ld hl,swabby_x
         dec (hl)
       +:
-      call IsPlayer1UpPressed
+      call is_up_pressed
       jp nc,+
         ld hl,swabby_y
         dec (hl)
       +:
-      call IsPlayer1DownPressed
+      call is_down_pressed
       jp nc,+
         ld hl,swabby_y
         inc (hl)
@@ -386,9 +396,9 @@
   demon_attack:
     .incbin "bank_4\demon_attack.psg"
   intro_tune_1:
-  .incbin "bank_4\swabby_pro_intro.psg"
+    .incbin "bank_4\swabby_pro_intro.psg"
   intro_tune_2:
-  .incbin "bank_4\swabby_pro_intro_2.psg"
+    .incbin "bank_4\swabby_pro_intro_2.psg"
 .ends
 ;
 .bank COPENHAGEN_BANK slot 2

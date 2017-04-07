@@ -303,25 +303,25 @@
       jp _EndSwitch
 
     _Joystick1Controlled:
-      call IsPlayer1RightPressed
+      call is_right_pressed
       jp nc,+
         ld a,(ix+7)
         add a,(ix+2)
         ld (ix+2),a
       +:
-      call IsPlayer1LeftPressed
+      call is_left_pressed
       jp nc,+
         ld a,(ix+2)
         sub (ix+7)
         ld (ix+2),a
       +:
-      call IsPlayer1UpPressed
+      call is_up_pressed
       jp nc,+
         ld a,(ix+1)
         sub (ix+6)
         ld (ix+1),a
       +:
-      call IsPlayer1DownPressed
+      call is_down_pressed
       jp nc,+
         ld a,(ix+1)
         add a,(ix+6)
