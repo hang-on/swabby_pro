@@ -97,17 +97,15 @@
     xor a
     ld (menu_state),a
     ld (menu_timer),a
-    ; -------------------
-    ; Working area
+    ; Print external ram counter (counts title screen preps.).
     ld a,16
-    ld b,12
+    ld b,21
     call set_cursor
-    ld a,16
+    SELECT_EXTRAM
+    ld hl,EXTRAM_START
+    ld a,(hl)
+    SELECT_ROM
     call print_register_a
-    ld hl,$ffff
-    call print_register_hl
-    ;
-    ; ------------------------
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
