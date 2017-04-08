@@ -1,23 +1,29 @@
 echo off
-:: process_pixaki_sheet.bat
-:: This tool is used to grab an exported spritesheet from pixaki and convert
-:: it to tiles for GG programming. Adjust the folder and/or filename below as
-:: appropriate.
-:: NOTE: Depends on a special pico-8 colormap.png being present in the folder.
+::
+:: NOTE: Depends on a special pico-8 colormap_cube.png being present in the folder.
 
-SET folder=c:\users\ansj\dropbox\_SMS\pixaki\
-SET filename=spritesheet3.png
+SET folder="C:\Users\ANSJ\Dropbox\Apps\Sprite Something\"
+SET filename1=spritesheet_1.png
+SET filename2=spritesheet_2.png
+SET output=spritesheet.png
 
-:: Copy from pixaki folder to this folder.
-copy %folder%%filename%
+:: Copy to this folder.
+copy %folder%%filename1%
+copy %folder%%filename2%
 
 :: Use ImageMagick to insert the 16 pico-8 colors as the first 16 tiles of the
 :: image (in order to preserve the correct palette in the tile conversion.)
-convert colormap.png  %filename% -append %filename%
+convert colormap_cube.png  %filename1% -append %filename1%
 
 :: Use ImageMagick to convert the image to 16 colors.
-convert %filename% -quantize RGB -remap colormap.png  %filename%
+convert %filename1% -quantize RGB -remap colormap_cube.png  %filename1%
+
+:: Crop away the colormap_cube.
+convert %filename1% -crop 32x208+0+32 +repage %filename1%
+
+:: Append 8x8 sprites.
+convert -append %filename1% %filename2% %output%
 
 
 :: Use bmp2tile to make tiles out of the appended image.
-bmp2tile.exe %filename% -savetiles %filename%_tiles.inc -fullpalette -spritepalette -noremovedupes -nomirror -tileoffset 128 -exit
+bmp2tile.exe %output% -savetiles %output%_tiles.inc -fullpalette -spritepalette -noremovedupes -nomirror -tileoffset 128 -exit

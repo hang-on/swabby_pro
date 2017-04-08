@@ -53,13 +53,34 @@
     .dw init, prepare_titlescreen, run_titlescreen
     .dw prepare_recorder, run_recorder, prepare_sandbox, run_sandbox
     .dw prepare_copenhagen, run_copenhagen
-    .dw prepare_devmenu, run_devmenu
+    .dw prepare_devmenu, run_devmenu, prepare_andorra, run_andorra
   ;
   ; ---------------------------------------------------------------------------
   ;
   ; ---------------------------------------------------------------------------
+  prepare_andorra:
+    ; Turn on screen and frame interrupts.
+    ld a,DISPLAY_1_FRAME_1_SIZE_0
+    ld b,1
+    call set_register
+    ei
+    ; When all is set, change the game state.
+    ld a,GS_RUN_ANDORRA
+    ld (game_state),a
+  jp main_loop
+  ;
+  run_andorra:
+  ;
+  call await_frame_interrupt
+  call load_sat
+  ;
+  ; update()
+  call get_input_ports
+  ;
+  call begin_sprites
+  jp main_loop
+  ;
   prepare_devmenu:
-
     ; Display menu text
     ld hl,menu_title
     ld b,4
@@ -419,4 +440,13 @@
   font_tiles:
     .include "bank_6\asciifont_atascii_tiles.inc"
   font_tiles_end:
+.ends
+;
+.bank ANDORRA_BANK slot 2
+; -----------------------------------------------------------------------------
+.section "Andorra mode assets" free
+; -----------------------------------------------------------------------------
+  andorra_tiles:
+    .include "bank_7\spritesheet.png_tiles.inc"
+  andorra_tiles_end:
 .ends
