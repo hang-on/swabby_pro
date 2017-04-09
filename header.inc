@@ -73,6 +73,8 @@
   .equ SPRITE_1 2
   .equ SPRITE_2 8
   .equ SPRITE_3 10
+  .equ WALKER_Y_INIT LCD_BOTTOM_BORDER-20
+  .equ WALKER_X_INIT LCD_RIGHT_BORDER+24
 
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,4 +116,10 @@
   ;
   menu_timer db
   menu_state db
+  ;
+  walker_y db
+  walker_x db
+  walker_sprite db
+  walker_state db
+  walker_state_timer db
 .ends

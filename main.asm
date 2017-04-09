@@ -86,6 +86,13 @@
     ld (swabby_state),a
     ld a,SPRITE_0
     ld (swabby_sprite),a
+    ; The walker:
+    ld a,WALKER_Y_INIT
+    ld (walker_y),a
+    ld a,WALKER_X_INIT
+    ld (walker_x),a
+    ld a,SPRITE_1
+    ld (walker_sprite),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -107,6 +114,8 @@
   call get_input_ports
   ;
   ; Handle Swabby states.
+  ld hl,swabby_state_timer
+  inc (hl)
   ld a,(swabby_state)
   cp SWABBY_IDLE
   jp nz,+
@@ -115,6 +124,8 @@
     jp nc,+
       ld a,SWABBY_MOVING
       ld (swabby_state),a
+      xor a
+      ld (swabby_state_timer),a
   +:
   ld a,(swabby_state)
   cp SWABBY_MOVING
@@ -124,6 +135,8 @@
     jp c,+
       ld a,SWABBY_IDLE            ; If dpad is not pressed anymore, switch
       ld (swabby_state),a         ; out of move state, and back to idle.
+      xor a
+      ld (swabby_state_timer),a      
       jp ++
     +:
     call is_right_pressed
@@ -148,8 +161,18 @@
     +:
   ++:
   ;
+  ; Handle the walker!
+
+  ld ix,walker_y
+  dec (ix+4)              ; The state timer.
+  jp m,+
+  dec (ix+1)
+  +:
+  ;
   call begin_sprites
   ld ix,swabby_y
+  call add_metasprite
+  ld ix,walker_y
   call add_metasprite
 
   ; Check for start button press
@@ -352,7 +375,7 @@
     ld (game_state),a
   jp main_loop
   my_string:
-    .asc "SWABBY!#"
+    .asc "Hi res!#"
   ;
   ; ---------------------------------------------------------------------------
   run_copenhagen:
