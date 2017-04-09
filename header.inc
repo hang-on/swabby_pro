@@ -73,6 +73,10 @@
   .equ SPRITE_1 2
   .equ SPRITE_2 8
   .equ SPRITE_3 10
+  .equ SPRITE_4 16
+  .equ SPRITE_5 18
+  .equ SPRITE_6 24
+  .equ SPRITE_7 26
   .equ WALKER_Y_INIT LCD_BOTTOM_BORDER-20
   .equ WALKER_X_INIT LCD_RIGHT_BORDER+24
 
@@ -101,6 +105,8 @@
   swabby_fire_timer db
   swabby_fire_lock db
   swabby_fire_delay db
+  ;
+  swabby_table_index db
   ;
   bullet_y_table dsb BULLET_MAX   ; Keep table vars in order!
   bullet_x_table dsb BULLET_MAX

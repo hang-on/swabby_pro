@@ -86,6 +86,8 @@
     ld (swabby_state),a
     ld a,SPRITE_0
     ld (swabby_sprite),a
+    xor a
+    ld (swabby_table_index),a
     ; The walker:
     ld a,WALKER_Y_INIT
     ld (walker_y),a
@@ -103,7 +105,10 @@
     ld (game_state),a
   jp main_loop
   retro_msg:
-    .asc "Retro!#"
+    .asc "Press button (2)!#"
+  swabby_table:
+    .db SPRITE_1, SPRITE_2, SPRITE_3, SPRITE_4, SPRITE_0
+  swabby_table_end:
   ;
   run_retro:
   ;
@@ -115,10 +120,14 @@
   ;
   ; Handle Swabby states.
   ld hl,swabby_state_timer
-  inc (hl)
+  ld a,255
+  cp (hl)
+  jp z,+
+    inc (hl)
+  +:
   ld a,(swabby_state)
   cp SWABBY_IDLE
-  jp nz,+
+  jp nz,++
   ; Handle Swabby idle state:
     call is_dpad_pressed
     jp nc,+
@@ -126,7 +135,9 @@
       ld (swabby_state),a
       xor a
       ld (swabby_state_timer),a
-  +:
+    +:
+  ; End of swabby idle state.
+  ++:
   ld a,(swabby_state)
   cp SWABBY_MOVING
   jp nz,++
@@ -136,7 +147,7 @@
       ld a,SWABBY_IDLE            ; If dpad is not pressed anymore, switch
       ld (swabby_state),a         ; out of move state, and back to idle.
       xor a
-      ld (swabby_state_timer),a      
+      ld (swabby_state_timer),a
       jp ++
     +:
     call is_right_pressed
@@ -160,6 +171,28 @@
       inc (hl)
     +:
   ++:
+  call is_button_2_pressed
+  jp nc,++
+    ld a,(swabby_state_timer)
+    cp 20
+    jp c,++
+      xor a
+      ld (swabby_state_timer),a
+      ld hl,swabby_table
+      ld a,(swabby_table_index)
+      ld d,0
+      ld e,a
+      add hl,de
+      inc a
+      cp swabby_table_end-swabby_table
+      jr nz,+
+        xor a
+      +:
+      ld (swabby_table_index),a
+      ld a,(hl)
+      ld (swabby_sprite),a
+  ++:
+
   ;
   ; Handle the walker!
 
