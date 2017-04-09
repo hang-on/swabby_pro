@@ -59,6 +59,38 @@
   ;
   ; ---------------------------------------------------------------------------
   prepare_andorra:
+    ; Andorra mode is a retro 16x16 sprite mode.
+    SELECT_BANK ANDORRA_BANK
+    ld bc,andorra_tiles_end-andorra_tiles
+    ld de,SPRITE_BANK_START;-(16*32)         ; The first 16 tiles are the cols.
+    ld hl,andorra_tiles
+    call load_vram                          ;
+    ; Dirty hack for setting background color to blue.
+    ld hl,NAME_TABLE_START
+    ld a,l
+    out (CONTROL_PORT),a
+    ld a,h
+    or VRAM_WRITE_COMMAND
+    out (CONTROL_PORT),a
+    ld h,124                                 ; Index of light blue color tile.
+    ld l,%00001000                           ; 2nd byte, select sprite palette.
+    ld de,32*28                              ; 32 columns, 28 rows.
+    -:
+      ld a,h
+      out (DATA_PORT),a                      ; Write 1st word to name table.
+      ld a,l
+      out (DATA_PORT),a                      ; Write 2nd word to name table.
+      dec de
+      ld a,e
+      or d
+    jp nz,-
+    ; Display test message
+    ld hl,retro_msg
+    ld a,7
+    ld b,3
+    ld c,6
+    call print
+
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -68,6 +100,8 @@
     ld a,GS_RUN_ANDORRA
     ld (game_state),a
   jp main_loop
+  retro_msg:
+    .asc "Retro!#"
   ;
   run_andorra:
   ;
@@ -100,6 +134,11 @@
     ; Item 2.
     ld hl,item_3
     ld b,10
+    ld c,10
+    call print
+    ; Item 4.
+    ld hl,item_4
+    ld b,12
     ld c,10
     call print
     ; Menu footer.
@@ -145,6 +184,8 @@
     .asc "Low Res#"
   item_3:
     .asc "Hi Res#"
+  item_4:
+    .asc "Retro#"
   menu_footer:
     .asc "*Start* This menu#"
   ;
@@ -204,7 +245,7 @@
         call set_register                 ; safely done.
       jp main_loop
       menu_state_to_game_state:           ; menu_item(0) == game_state(1), etc.
-        .db 1, 5, 7
+        .db 1, 5, 7, 11
       ;
     menu_end:
     ; Place menu sprite
@@ -220,7 +261,7 @@
     call add_sprite
   jp main_loop
   menu_table:
-    .db 46, 62, 78                          ; Contains y-pos for menu selector.
+    .db 46, 62, 78, 94                       ; Contains y-pos for menu selector.
   ;
   prepare_copenhagen:
     ; Prepare Copenhagen mode (large, unzoomed sprites)
@@ -447,6 +488,6 @@
 .section "Andorra mode assets" free
 ; -----------------------------------------------------------------------------
   andorra_tiles:
-    .include "bank_7\spritesheet.png_tiles.inc"
+    .include "bank_7\trimmed_sheet.inc"
   andorra_tiles_end:
 .ends

@@ -19,7 +19,8 @@ convert colormap_cube.png  %filename1% -append %filename1%
 convert %filename1% -quantize RGB -remap colormap_cube.png  %filename1%
 
 :: Crop away the colormap_cube.
-convert %filename1% -crop 32x208+0+32 +repage %filename1%
+:: convert %filename1% -crop 32x208+0+32 +repage %filename1%
+:: convert %filename1% -map colormap_cube.png %filename1% 
 
 :: Append 8x8 sprites.
 convert -append %filename1% %filename2% %output%

@@ -64,7 +64,7 @@
   .equ STRING_TERMINATOR 3        ; Terminate strings with #
   ; Development menu:
   .equ MENU_MIN 0
-  .equ MENU_MAX 2
+  .equ MENU_MAX 3
   .equ MENU_DELAY 10
 ; Andorra mode:
   .equ ANDORRA_BANK 7
