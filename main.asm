@@ -69,25 +69,8 @@
     ld de,SPRITE_BANK_START;-(16*32)         ; The first 16 tiles are the cols.
     ld hl,retro_tiles
     call load_vram                          ;
-    ; Dirty hack for setting background color to blue.
-    ld hl,NAME_TABLE_START
-    ld a,l
-    out (CONTROL_PORT),a
-    ld a,h
-    or VRAM_WRITE_COMMAND
-    out (CONTROL_PORT),a
-    ld h,$bf                                 ; Last sprite tile (blue).
-    ld l,%00001001                           ; 2nd byte, select sprite palette.
-    ld de,32*28                              ; 32 columns, 28 rows.
-    -:
-      ld a,h
-      out (DATA_PORT),a                      ; Write 1st word to name table.
-      ld a,l
-      out (DATA_PORT),a                      ; Write 2nd word to name table.
-      dec de
-      ld a,e
-      or d
-    jp nz,-
+    ld a,BRIGHT_BLUE_TILE
+    call reset_name_table
     ; Display test message
     ld hl,retro_msg
     ld a,7
@@ -130,6 +113,9 @@
   jp main_loop
   ;
   prepare_devmenu:
+    ld a,0
+    ld b,1
+    call reset_name_table
     ; Display menu text
     ld hl,menu_title
     ld b,4
@@ -285,32 +271,15 @@
     ld de,$0e00                             ; Address of tile nr. 128 - 16
     ld hl,copenhagen_tiles                  ; This will load 127 tiles to the
     call load_vram                          ; first bank and 127 to the second.
-    ; Dirty hack for setting background color to blue.
-    ld hl,NAME_TABLE_START
-    ld a,l
-    out (CONTROL_PORT),a
-    ld a,h
-    or VRAM_WRITE_COMMAND
-    out (CONTROL_PORT),a
-    ld h,124                                 ; Index of light blue color tile.
-    ld l,%00001000                           ; 2nd byte, select sprite palette.
-    ld de,32*28                              ; 32 columns, 28 rows.
-    -:
-      ld a,h
-      out (DATA_PORT),a                      ; Write 1st word to name table.
-      ld a,l
-      out (DATA_PORT),a                      ; Write 2nd word to name table.
-      dec de
-      ld a,e
-      or d
-    jp nz,-
+    ; Set background to blue.
+    ld a,BRIGHT_BLUE_TILE
+    call reset_name_table
     ; Display test message
     ld hl,my_string
     ld a,7
     ld b,3
     ld c,6
     call print
-
     ; Initialize the variables.
     ld a,SWABBY_Y_INIT
     ld (swabby_y),a

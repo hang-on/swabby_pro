@@ -205,7 +205,7 @@
       cp STRING_TERMINATOR
       ret z
       out (DATA_PORT),a             ; Write it to name table.
-      ld a,%00001000                ; Select sprite palette for this char.
+      ld a,%00000000                ; Select background palette for this char.
       out (DATA_PORT),a             ; Write 2nd byte to name table.
       inc hl                        ; Point to next char.
     djnz -
@@ -255,7 +255,7 @@
     ;
     pop af                        ; Get tile.
     out (DATA_PORT),a             ; Write it to name table.
-    ld a,%00001000                ; Select sprite palette for this char.
+    ld a,%00000000                ; Select background palette for this char.
     out (DATA_PORT),a             ; Write 2nd byte to name table.
   RESTORE_REGISTERS
   ret

@@ -5,6 +5,7 @@
 ;
 ; Misc. definitions:
   .equ PICO8_PALETTE_SIZE 16
+  .equ BRIGHT_BLUE_TILE $bf
 ; Game states:
   .equ GS_BOOT 0
   .equ GS_PREPARE_TITLESCREEN 1

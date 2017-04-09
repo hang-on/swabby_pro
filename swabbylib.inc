@@ -10,6 +10,37 @@
     xor a
     ld (swabby_state_timer),a
   ret
+
+  reset_name_table:
+    ; Overwrite all name table entries with a specified tile.
+    ; Entry: A = Tile index
+    ;        B = Bank (1/2) - selects corresponding palette.
+    ; Uses: AF, B, DE, HL
+    push af
+    dec b
+    jp z,+
+      ld b,%00010001
+    +:
+    ld hl,NAME_TABLE_START
+    ld a,l
+    out (CONTROL_PORT),a
+    ld a,h
+    or VRAM_WRITE_COMMAND
+    out (CONTROL_PORT),a
+    pop af
+    ld h,a                                   ; Index of tile.
+    ld l,b                           ; 2nd byte, bank and pal.
+    ld de,32*28                              ; 32 columns, 28 rows.
+    -:
+      ld a,h
+      out (DATA_PORT),a                      ; Write 1st word to name table.
+      ld a,l
+      out (DATA_PORT),a                      ; Write 2nd word to name table.
+      dec de
+      ld a,e
+      or d
+    jp nz,-
+  ret
 .ends
 
 ; -----------------------------------------------------------------------------
