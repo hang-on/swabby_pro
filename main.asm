@@ -16,7 +16,11 @@
     ld b,PICO8_PALETTE_SIZE
     ld hl,pico8_palette
     call load_cram
-    ;
+    ; Load the pico-8 palette to colors 0-15.
+    ld a,BACKGROUND_PALETTE_START
+    ld b,PICO8_PALETTE_SIZE
+    ld hl,pico8_palette
+    call load_cram
     ; Load the font tiles.
     SELECT_BANK FONT_BANK
     ld bc,font_tiles_end-font_tiles
@@ -72,8 +76,8 @@
     ld a,h
     or VRAM_WRITE_COMMAND
     out (CONTROL_PORT),a
-    ld h,124                                 ; Index of light blue color tile.
-    ld l,%00001000                           ; 2nd byte, select sprite palette.
+    ld h,$bf                                 ; Last sprite tile (blue).
+    ld l,%00001001                           ; 2nd byte, select sprite palette.
     ld de,32*28                              ; 32 columns, 28 rows.
     -:
       ld a,h
@@ -112,6 +116,17 @@
   call get_input_ports
   ;
   call begin_sprites
+  ; Check for start button press
+  call is_start_pressed
+  jp nc,+
+    di
+    ld a,DISPLAY_0_FRAME_0_SIZE_0
+    ld b,1
+    call set_register
+    ld a,GS_PREPARE_DEVMENU
+    ld (game_state),a
+    jp main_loop
+  +:
   jp main_loop
   ;
   prepare_devmenu:
