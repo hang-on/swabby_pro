@@ -67,8 +67,13 @@
   .equ MENU_MIN 0
   .equ MENU_MAX 3
   .equ MENU_DELAY 10
-; Andorra mode:
+; Retro mode:
   .equ RETRO_BANK 7
+  .equ SPRITE_0 0
+  .equ SPRITE_1 2
+  .equ SPRITE_2 8
+  .equ SPRITE_3 10
+
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 .ramsection "Main variables" slot 3

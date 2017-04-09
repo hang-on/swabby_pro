@@ -77,7 +77,15 @@
     ld b,3
     ld c,6
     call print
-
+    ; Initialize the variables.
+    ld a,SWABBY_Y_INIT
+    ld (swabby_y),a
+    ld a,SWABBY_X_INIT
+    ld (swabby_x),a
+    ld a,SWABBY_IDLE
+    ld (swabby_state),a
+    ld a,SPRITE_0
+    ld (swabby_sprite),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -98,7 +106,52 @@
   ; update()
   call get_input_ports
   ;
+  ; Handle Swabby states.
+  ld a,(swabby_state)
+  cp SWABBY_IDLE
+  jp nz,+
+  ; Handle Swabby idle state:
+    call is_dpad_pressed
+    jp nc,+
+      ld a,SWABBY_MOVING
+      ld (swabby_state),a
+  +:
+  ld a,(swabby_state)
+  cp SWABBY_MOVING
+  jp nz,++
+  ; Handle Swabby moving state:
+    call is_dpad_pressed
+    jp c,+
+      ld a,SWABBY_IDLE            ; If dpad is not pressed anymore, switch
+      ld (swabby_state),a         ; out of move state, and back to idle.
+      jp ++
+    +:
+    call is_right_pressed
+    jp nc,+
+      ld hl,swabby_x
+      inc (hl)
+    +:
+    call is_left_pressed
+    jp nc,+
+      ld hl,swabby_x
+      dec (hl)
+    +:
+    call is_up_pressed
+    jp nc,+
+      ld hl,swabby_y
+      dec (hl)
+    +:
+    call is_down_pressed
+    jp nc,+
+      ld hl,swabby_y
+      inc (hl)
+    +:
+  ++:
+  ;
   call begin_sprites
+  ld ix,swabby_y
+  call add_metasprite
+
   ; Check for start button press
   call is_start_pressed
   jp nc,+
@@ -273,6 +326,7 @@
     call load_vram                          ; first bank and 127 to the second.
     ; Set background to blue.
     ld a,BRIGHT_BLUE_TILE
+    ld b,2
     call reset_name_table
     ; Display test message
     ld hl,my_string

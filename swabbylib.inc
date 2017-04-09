@@ -3,6 +3,34 @@
 ; -----------------------------------------------------------------------------
 .section "Swabby lib" free
 ; -----------------------------------------------------------------------------
+  add_metasprite:
+    ld d,4
+    ld hl,meta_sprite_table
+    -:
+      ld a,(ix+0)
+      add a,(hl)
+      ld b,a
+      inc hl
+      ld a,(ix+1)
+      add a,(hl)
+      ld c,a
+      inc hl
+      ld a,(hl)
+      ld e,a
+      ld a,(ix+2)
+      add a,e
+      inc hl
+      call add_sprite
+      dec d
+    jp nz,-
+  ret
+  meta_sprite_table:
+    .db 0, 0, 0
+    .db 0, 8, 1
+    .db 8, 0, 4
+    .db 8, 8, 5
+
+
   change_swabby_state:
     ; Change the state of Swabby and reset the state timer.
     ; Entry: A = state
@@ -19,7 +47,7 @@
     push af
     dec b
     jp z,+
-      ld b,%00010001
+      ld b,%00001001
     +:
     ld hl,NAME_TABLE_START
     ld a,l
