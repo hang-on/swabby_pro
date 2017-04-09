@@ -185,9 +185,9 @@
 0000:03f4 pico8_palette
 0000:0414 main_loop
 0000:0424 jump_table
-0000:043e prepare_andorra
+0000:043e prepare_retro
 0000:048b retro_msg
-0000:0492 run_andorra
+0000:0492 run_retro
 0000:04a1 prepare_devmenu
 0000:052b menu_title
 0000:053d item_1
@@ -227,5 +227,5 @@
 0005:a200 copenhagen_tiles_end
 0006:8000 font_tiles
 0006:8b60 font_tiles_end
-0007:8000 andorra_tiles
-0007:8f00 andorra_tiles_end
+0007:8000 retro_tiles
+0007:9800 retro_tiles_end

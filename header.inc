@@ -17,8 +17,8 @@
   .equ GS_RUN_COPENHAGEN 8
   .equ GS_PREPARE_DEVMENU 9
   .equ GS_RUN_DEVMENU 10
-  .equ GS_PREPARE_ANDORRA 11
-  .equ GS_RUN_ANDORRA 12
+  .equ GS_PREPARE_RETRO 11
+  .equ GS_RUN_RETRO 12
   ;
   .equ INITIAL_GAME_STATE GS_PREPARE_DEVMENU ; Where to go after boot?
 ; Titlesreen assets:
@@ -67,7 +67,7 @@
   .equ MENU_MAX 3
   .equ MENU_DELAY 10
 ; Andorra mode:
-  .equ ANDORRA_BANK 7
+  .equ RETRO_BANK 7
 ;
 ; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 .ramsection "Main variables" slot 3

@@ -53,17 +53,17 @@
     .dw init, prepare_titlescreen, run_titlescreen
     .dw prepare_recorder, run_recorder, prepare_sandbox, run_sandbox
     .dw prepare_copenhagen, run_copenhagen
-    .dw prepare_devmenu, run_devmenu, prepare_andorra, run_andorra
+    .dw prepare_devmenu, run_devmenu, prepare_retro, run_retro
   ;
   ; ---------------------------------------------------------------------------
   ;
   ; ---------------------------------------------------------------------------
-  prepare_andorra:
+  prepare_retro:
     ; Andorra mode is a retro 16x16 sprite mode.
-    SELECT_BANK ANDORRA_BANK
-    ld bc,andorra_tiles_end-andorra_tiles
+    SELECT_BANK RETRO_BANK
+    ld bc,retro_tiles_end-retro_tiles
     ld de,SPRITE_BANK_START;-(16*32)         ; The first 16 tiles are the cols.
-    ld hl,andorra_tiles
+    ld hl,retro_tiles
     call load_vram                          ;
     ; Dirty hack for setting background color to blue.
     ld hl,NAME_TABLE_START
@@ -97,13 +97,13 @@
     call set_register
     ei
     ; When all is set, change the game state.
-    ld a,GS_RUN_ANDORRA
+    ld a,GS_RUN_RETRO
     ld (game_state),a
   jp main_loop
   retro_msg:
     .asc "Retro!#"
   ;
-  run_andorra:
+  run_retro:
   ;
   call await_frame_interrupt
   call load_sat
@@ -483,11 +483,11 @@
   font_tiles_end:
 .ends
 ;
-.bank ANDORRA_BANK slot 2
+.bank RETRO_BANK slot 2
 ; -----------------------------------------------------------------------------
-.section "Andorra mode assets" free
+.section "Retro mode assets" free
 ; -----------------------------------------------------------------------------
-  andorra_tiles:
-    .include "bank_7\trimmed_sheet.inc"
-  andorra_tiles_end:
+  retro_tiles:
+    .include "bank_7\spritesheet.png_tiles.inc"
+  retro_tiles_end:
 .ends
