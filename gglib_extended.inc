@@ -167,6 +167,12 @@
 ; -----------------------------------------------------------------------------
 .section "Printing" free
 ; -----------------------------------------------------------------------------
+  ; Functions for printing ascii chars.
+  ; Put this ascii map in header:
+  ;   .asciitable
+  ;      map " " to "z" = 0
+  ;    .enda
+
   print:
     ; Print a string to the name table. Terminate with # (ascii).
     ; N.B. Make sure that this function is not interrupted!

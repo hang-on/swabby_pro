@@ -63,7 +63,12 @@
   ;
   ; ---------------------------------------------------------------------------
   prepare_retro:
-    ; Andorra mode is a retro 16x16 sprite mode.
+    ; Retro mode is a retro 16x16 sprite mode.
+    SELECT_BANK FONT_BANK
+    ld bc,font_tiles_end-font_tiles
+    ld de,BACKGROUND_BANK_START
+    ld hl,font_tiles
+    call load_vram
     SELECT_BANK RETRO_BANK
     ld bc,retro_tiles_end-retro_tiles
     ld de,SPRITE_BANK_START;-(16*32)         ; The first 16 tiles are the cols.
@@ -107,7 +112,7 @@
   retro_msg:
     .asc "Press button (2)!#"
   swabby_table:
-    .db SPRITE_1, SPRITE_2, SPRITE_3, SPRITE_4, SPRITE_0
+    .db SPRITE_1, SPRITE_2, SPRITE_3, SPRITE_4, ,SPRITE_5, SPRITE_6, SPRITE_0
   swabby_table_end:
   ;
   run_retro:
@@ -192,10 +197,8 @@
       ld a,(hl)
       ld (swabby_sprite),a
   ++:
-
   ;
   ; Handle the walker!
-
   ld ix,walker_y
   dec (ix+4)              ; The state timer.
   jp m,+
@@ -276,6 +279,8 @@
     ld a,(hl)
     SELECT_ROM
     call print_register_a
+    ; Wipe sprites.
+    call begin_sprites
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -297,7 +302,7 @@
   item_4:
     .asc "Retro#"
   menu_footer:
-    .asc "*Start* This menu#"
+    .asc "*Start* = Reset#"
   ;
   run_devmenu:
     ;
