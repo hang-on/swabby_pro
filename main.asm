@@ -113,7 +113,7 @@
     .asc "Press button (2)!#"
   swabby_table:
     .db SPRITE_1, SPRITE_2, SPRITE_3, SPRITE_4, ,SPRITE_5, SPRITE_6,
-    .db SPRITE_7, SPRITE_0
+    .db SPRITE_7, SPRITE_8, SPRITE_0
   swabby_table_end:
   ;
   run_retro:

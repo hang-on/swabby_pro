@@ -77,6 +77,12 @@
   ; Zoomed sprites.
   prepare_sandbox:
     ; Prepare the sandbox mode
+    SELECT_BANK FONT_BANK
+    ld bc,font_tiles_end-font_tiles
+    ld de,BACKGROUND_BANK_START
+    ld hl,font_tiles
+    call load_vram
+    ;
     SELECT_BANK SANDBOX_BANK
     ld bc,sandbox_tiles_end-sandbox_tiles
     ld de,$0e00                             ; Address of tile nr. 128 - 16
@@ -134,6 +140,12 @@
     ld (active_demons_timer),hl           ; It is a word.
     ; ---
     ;
+    ; Display  message
+    ld hl,sandbox_msg
+    ld a,7
+    ld b,3
+    ld c,6
+    call print
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0_ZOOM
     ld b,1
@@ -143,6 +155,8 @@
     ld a,GS_RUN_SANDBOX
     ld (game_state),a
   jp main_loop
+  sandbox_msg:
+    .asc "Shoot and dogde!#"
   ; ---------------------------------------------------------------------------
   run_sandbox:
     ; Run sandbox mode...
