@@ -282,6 +282,7 @@
     call print_register_a
     ; Wipe sprites.
     call begin_sprites
+    call load_sat
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
