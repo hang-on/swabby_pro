@@ -156,7 +156,7 @@
     ld (game_state),a
   jp main_loop
   sandbox_msg:
-    .asc "Shoot and dogde!#"
+    .asc "Shoot and dodge!#"
   ; ---------------------------------------------------------------------------
   run_sandbox:
     ; Run sandbox mode...

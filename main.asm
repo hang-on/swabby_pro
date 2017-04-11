@@ -100,6 +100,8 @@
     ld (walker_x),a
     ld a,SPRITE_1
     ld (walker_sprite),a
+    xor a
+    ld (walker_table_index),a
     ; Turn on screen and frame interrupts.
     ld a,DISPLAY_1_FRAME_1_SIZE_0
     ld b,1
@@ -115,6 +117,11 @@
     .db SPRITE_1, SPRITE_2, SPRITE_3, SPRITE_4, ,SPRITE_5, SPRITE_6,
     .db SPRITE_7, SPRITE_8, SPRITE_0
   swabby_table_end:
+  walker_table:
+    .db SPRITE_9, SPRITE_10, SPRITE_11, SPRITE_12,
+    .db SPRITE_13, SPRITE_14, SPRITE_1
+  walker_table_end:
+
   ;
   run_retro:
   ;
@@ -203,8 +210,25 @@
   ld ix,walker_y
   dec (ix+4)              ; The state timer.
   jp m,+
-  dec (ix+1)
+    dec (ix+1)
   +:
+  ld a,(walker_x)
+  cp LCD_LEFT_BORDER-16
+  jp nz,++
+    ld hl,walker_table
+    ld a,(walker_table_index)
+    ld d,0
+    ld e,a
+    add hl,de
+    inc a
+    cp walker_table_end-walker_table
+    jr nz,+
+      xor a
+    +:
+    ld (walker_table_index),a
+    ld a,(hl)
+    ld (walker_sprite),a
+  ++:
   ;
   call begin_sprites
   ld ix,swabby_y
@@ -304,7 +328,7 @@
   item_4:
     .asc "Retro#"
   menu_footer:
-    .asc "*Start* = Reset#"
+    .asc " *Start* = Reset#"
   ;
   run_devmenu:
     ;

@@ -80,6 +80,14 @@
   .equ SPRITE_8 32
   .equ SPRITE_9 34
 
+  .equ SPRITE_10 40
+  .equ SPRITE_11 42
+  .equ SPRITE_12 48
+  .equ SPRITE_13 50
+  .equ SPRITE_14 56
+  .equ SPRITE_15 58
+
+
   .equ WALKER_Y_INIT LCD_BOTTOM_BORDER-20
   .equ WALKER_X_INIT LCD_RIGHT_BORDER+24
 
@@ -129,6 +137,5 @@
   walker_y db
   walker_x db
   walker_sprite db
-  walker_state db
-  walker_state_timer db
+  walker_table_index db
 .ends
