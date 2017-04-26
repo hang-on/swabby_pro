@@ -119,7 +119,7 @@
   swabby_table_end:
   walker_table:
     .db SPRITE_9, SPRITE_10, SPRITE_11, SPRITE_12,
-    .db SPRITE_13, SPRITE_14, SPRITE_1
+    .db SPRITE_13, SPRITE_14,, SPRITE_15, SPRITE_1
   walker_table_end:
 
   ;
